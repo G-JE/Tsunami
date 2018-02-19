@@ -12,6 +12,7 @@ board/board.o board/board.d: ../board/board.c \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_clock.h \
  ../board/clock_config.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\utilities/fsl_debug_console.h
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/fsl_device_registers.h:
@@ -39,5 +40,7 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h:
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_clock.h:
 
 ../board/clock_config.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\utilities/fsl_debug_console.h:

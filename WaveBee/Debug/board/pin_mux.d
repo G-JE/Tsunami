@@ -1,5 +1,5 @@
 board/pin_mux.o board/pin_mux.d: ../board/pin_mux.c \
- C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/fsl_device_registers.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/core_cm4.h \
@@ -9,10 +9,11 @@ board/pin_mux.o board/pin_mux.d: ../board/pin_mux.c \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/system_MK66F18.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18_features.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_clock.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_port.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_port.h \
  ../board/pin_mux.h
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/fsl_device_registers.h:
 
@@ -32,6 +33,8 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18_features.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_clock.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_port.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_port.h:
 
 ../board/pin_mux.h:

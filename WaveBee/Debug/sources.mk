@@ -21,6 +21,7 @@ dma_manager \
 drivers \
 fatfs/fatfs_source \
 sdmmc/src \
+source/Audio \
 source \
 startup \
 utilities \

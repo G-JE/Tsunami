@@ -15,6 +15,7 @@ sdmmc/src/fsl_sdmmc_common.o sdmmc/src/fsl_sdmmc_common.d: \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_sdhc.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_spec.h
 
@@ -47,6 +48,8 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h:
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_sdhc.h:
 

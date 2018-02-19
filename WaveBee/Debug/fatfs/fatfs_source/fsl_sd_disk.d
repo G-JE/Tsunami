@@ -19,6 +19,7 @@ fatfs/fatfs_source/fsl_sd_disk.o fatfs/fatfs_source/fsl_sd_disk.d: \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_sdhc.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_spec.h
 
@@ -59,6 +60,8 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h:
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_sdhc.h:
 

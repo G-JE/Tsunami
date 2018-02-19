@@ -19,6 +19,7 @@ fatfs/fatfs_source/fsl_sdspi_disk.o fatfs/fatfs_source/fsl_sdspi_disk.d: \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/integer.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs/ffconf.h
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_dspi.h:
@@ -58,5 +59,7 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/integer.h:
 C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs/ffconf.h:
