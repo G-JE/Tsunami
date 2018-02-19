@@ -1,0 +1,6 @@
+23:37:11 **** Incremental Build of configuration Debug for project Testdemo_apps_sai ****
+make -r -j8 all 
+make: Nothing to be done for `all'.
+
+23:37:11 Build Finished (took 139ms)
+
