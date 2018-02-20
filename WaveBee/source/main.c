@@ -38,7 +38,7 @@
 #include "pin_mux.h"
 #include "clock_config.h"
 #include "MK66F18.h"
-
+#include "fsl_debug_console.h"
 
 int main(void) {
 
@@ -48,10 +48,17 @@ int main(void) {
     BOARD_InitBootPeripherals();
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
-
+    char command;
 
     while(1) {
+    	command = GETCHAR();
 
+    	switch(command){
+    	case '1':
+    		break;
+    	default:
+    		break;
+    	}
     }
 
     return 0 ;

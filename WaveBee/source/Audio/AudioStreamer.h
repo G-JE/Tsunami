@@ -9,7 +9,6 @@
 #include "fsl_dialog7212.h"
 #include "fsl_dmamux.h"
 
-
 #ifndef AUDIOSTREAM_AUDIOSTREAMER_H_
 #define AUDIOSTREAM_AUDIOSTREAMER_H_
 
@@ -43,10 +42,8 @@
 #define BUFFER_SIZE (512)
 #define BUFFER_NUM (4)
 
-
-void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void Init_Dialog7212(void);
-uint16_t* StartStream(void);
+uint16_t* StartStream(uint8_t time_s);
 
 #endif /* AUDIOSTREAM_AUDIOSTREAMER_H_ */

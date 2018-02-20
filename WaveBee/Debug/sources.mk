@@ -22,6 +22,7 @@ drivers \
 fatfs/fatfs_source \
 sdmmc/src \
 source/Audio \
+source/Memory \
 source \
 startup \
 utilities \

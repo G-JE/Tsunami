@@ -12,5 +12,9 @@
 #include "ff.h"
 #include "diskio.h"
 
+status_t Init_SD(void);
+void WriteToSD(void);
+void ReadFromSD(void);
+status_t sdcardWaitCardInsert(void);
 
 #endif /* MEMORY_SD_H_ */

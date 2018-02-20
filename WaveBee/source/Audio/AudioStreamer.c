@@ -18,27 +18,7 @@ volatile uint32_t beginCount = 0;
 volatile uint32_t sendCount = 0;
 volatile uint32_t receiveCount = 0;
 i2c_master_handle_t i2cHandle = {{0, 0, kI2C_Write, 0, 0, NULL, 0}, 0, 0, NULL, NULL};
-static uint16_t audioBuff[BUFFER_SIZE * BUFFER_NUM];
-
-void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
-{
-    sai_transfer_t xfer = {0};
-
-    sendCount++;
-    if (sendCount == beginCount)
-    {
-        istxFinished = true;
-        SAI_TransferTerminateSendEDMA(base, handle);
-        sendCount = 0;
-    }
-    else
-    {
-
-            xfer.data = (uint8_t *) audioBuff + ((sendCount - 1U) % BUFFER_NUM) * BUFFER_SIZE;
-            xfer.dataSize = BUFFER_SIZE;
-            SAI_TransferSendEDMA(base, handle, &xfer);
-    }
-}
+static uint16_t audioBuff[80000];
 
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
 {
@@ -55,9 +35,9 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
     else
     {
 
-            xfer.data = (uint8_t *) audioBuff + ((receiveCount - 1U) % BUFFER_NUM) * BUFFER_SIZE;
-            xfer.dataSize = BUFFER_SIZE;
-            SAI_TransferReceiveEDMA(base, handle, &xfer);
+		xfer.data = (uint8_t *) audioBuff + ((receiveCount - 1U) * BUFFER_SIZE);
+		xfer.dataSize = BUFFER_SIZE;
+		SAI_TransferReceiveEDMA(base, handle, &xfer);
     }
 }
 
@@ -68,7 +48,6 @@ void Init_Dialog7212(void){
 
     i2c_master_config_t i2cConfig = {0};
     uint32_t i2cSourceClock;
-
 
     EDMA_GetDefaultConfig(&dmaConfig);
     EDMA_Init(MIC_DMA, &dmaConfig);
@@ -127,23 +106,41 @@ void Init_Dialog7212(void){
 	DA7212_ConfigAudioFormat(&codecHandle, format.sampleRate_Hz, format.masterClockHz, format.bitWidth);
 	DA7212_ChangeOutput(&codecHandle, kDA7212_Output_HP);
 
-	SAI_TransferTxCreateHandleEDMA(Dialog_SAI, &txHandle, txCallback, NULL, &dmaTxHandle);
 	SAI_TransferRxCreateHandleEDMA(Dialog_SAI, &rxHandle, rxCallback, NULL, &dmaRxHandle);
 
 	mclkSourceClockHz = Dialog_CLK_FREQ;
-	SAI_TransferTxSetFormatEDMA(Dialog_SAI, &txHandle, &format, mclkSourceClockHz, format.masterClockHz);
 	SAI_TransferRxSetFormatEDMA(Dialog_SAI, &rxHandle, &format, mclkSourceClockHz, format.masterClockHz);
 
 	/* Enable interrupt to handle FIFO error */
-	SAI_TxEnableInterrupts(Dialog_SAI, kSAI_FIFOErrorInterruptEnable);
 	SAI_RxEnableInterrupts(Dialog_SAI, kSAI_FIFOErrorInterruptEnable);
-	EnableIRQ(Dialog_TX_IRQ);
 	EnableIRQ(Dialog_RX_IRQ);
 
 	DA7212_ChangeInput(&codecHandle, kDA7212_Input_MIC1_Dig);
 }
 
-uint16_t* StartStream(void){
+uint16_t* StartStream(uint8_t time_s){
+
+	sai_transfer_t xfer = {0};
+
+	/* First clear the buffer */
+	memset(audioBuff, 0, sizeof audioBuff);
+	istxFinished = false;
+	isrxFinished = false;
+	sendCount = 0;
+	receiveCount = 0;
+
+	/* Compute the begin count */
+	beginCount = time_s * SAMPLE_RATE / BUFFER_SIZE;
+
+	xfer.dataSize = BUFFER_SIZE;
+
+	/* Start record first */
+	xfer.data = (uint8_t *) audioBuff;
+	SAI_TransferReceiveEDMA(Dialog_SAI, &rxHandle, &xfer);
+
+	/* Wait for record and playback finished */
+	while (isrxFinished != true){}
+
 	return audioBuff;
 }
 
@@ -152,20 +149,20 @@ void Dialog_UserTxIRQHandler(void)
     /* Clear the FEF flag */
     SAI_TxClearStatusFlags(Dialog_SAI, kSAI_FIFOErrorFlag);
     SAI_TxSoftwareReset(Dialog_SAI, kSAI_ResetTypeFIFO);
-/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+
+    /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */
-#if defined __CORTEX_M && (__CORTEX_M == 4U)
+
     __DSB();
-#endif
 }
 
 void Dialog_UserRxIRQHandler(void)
 {
     SAI_RxClearStatusFlags(Dialog_SAI, kSAI_FIFOErrorFlag);
     SAI_RxSoftwareReset(Dialog_SAI, kSAI_ResetTypeFIFO);
-/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+
+    /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */
-#if defined __CORTEX_M && (__CORTEX_M == 4U)
+
     __DSB();
-#endif
 }

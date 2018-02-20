@@ -1,6 +1,0 @@
-22:39:05 **** Build of configuration Debug for project frdmk66f_demo_apps_ftm_pdb_adc16 ****
-make -r -j8 all 
-make: Nothing to be done for `all'.
-
-22:39:05 Build Finished (took 190ms)
-

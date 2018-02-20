@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include utilities/subdir.mk
 -include startup/subdir.mk
+-include source/Memory/subdir.mk
 -include source/Audio/subdir.mk
 -include source/subdir.mk
 -include sdmmc/src/subdir.mk

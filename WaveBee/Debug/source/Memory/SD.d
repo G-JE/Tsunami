@@ -1,6 +1,7 @@
-source/main.o source/main.d: ../source/main.c \
- C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h \
+source/Memory/SD.o source/Memory/SD.d: ../source/Memory/SD.c \
+ ../source/Memory/SD.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sd.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/fsl_device_registers.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18.h \
@@ -11,17 +12,23 @@ source/main.o source/main.d: ../source/main.c \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/system_MK66F18.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18_features.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_clock.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_host.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee\board/peripherals.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee\board/pin_mux.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18.h \
- C:\Users\ericksong\Documents\Tsunami\WaveBee\utilities/fsl_debug_console.h
+ C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_sdhc.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_spec.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/ff.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/integer.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs/ffconf.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/diskio.h
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h:
+../source/Memory/SD.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sd.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_common.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_common.h:
 
@@ -43,16 +50,24 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18_features.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_clock.h:
 
+C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_host.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\board/board.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_gpio.h:
+
 C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_common.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee\board/peripherals.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_sdhc.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee\board/pin_mux.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee\sdmmc\inc/fsl_sdmmc_spec.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee\board/clock_config.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/ff.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee\CMSIS/MK66F18.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/integer.h:
 
-C:\Users\ericksong\Documents\Tsunami\WaveBee\utilities/fsl_debug_console.h:
+C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs/ffconf.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\fatfs\fatfs_include/diskio.h:

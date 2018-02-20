@@ -16,6 +16,9 @@ board/peripherals.o board/peripherals.d: ../board/peripherals.c \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\codec/fsl_dialog7212.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_i2c.h \
  C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_dmamux.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\source/Audio/AudioOut.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_dac.h \
+ C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_ftm.h \
  ../board/peripherals.h
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\source/Audio/AudioStreamer.h:
@@ -51,5 +54,11 @@ C:\Users\ericksong\Documents\Tsunami\WaveBee\codec/fsl_dialog7212.h:
 C:\Users\ericksong\Documents\Tsunami\WaveBee/drivers/fsl_i2c.h:
 
 C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_dmamux.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\source/Audio/AudioOut.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_dac.h:
+
+C:\Users\ericksong\Documents\Tsunami\WaveBee\drivers/fsl_ftm.h:
 
 ../board/peripherals.h:

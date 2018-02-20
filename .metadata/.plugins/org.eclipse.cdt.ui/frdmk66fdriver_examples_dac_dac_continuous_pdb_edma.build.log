@@ -1,7 +1,0 @@
-22:39:06 **** Incremental Build of configuration Debug for project frdmk66fdriver_examples_dac_dac_continuous_pdb_edma ****
-make -r -j8 all 
-make: Nothing to be done for `all'.
-Command canceled
-
-22:39:06 Build Cancelled (took 190ms)
-
