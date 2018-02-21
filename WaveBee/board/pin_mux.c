@@ -22,7 +22,9 @@ pin_labels:
 - {pin_num: M4, pin_signal: ADC0_SE17/PTE24/CAN1_TX/UART4_TX/I2C0_SCL/EWM_OUT_b, label: row4, identifier: ADC0_SE17}
 - {pin_num: A5, pin_signal: PTD0/LLWU_P12/SPI0_PCS0/UART2_RTS_b/FTM3_CH0/FB_ALE/FB_CS1_b/FB_TS_b, label: col5, identifier: SPI0_PCS0}
 - {pin_num: K5, pin_signal: ADC0_SE18/PTE25/LLWU_P21/CAN1_RX/UART4_RX/I2C0_SDA/EWM_IN, label: row3, identifier: ADC0_SE18}
+- {pin_num: D8, pin_signal: PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/I2S0_RXD0/FB_AD10/SDRAM_A18/CMP0_OUT/FTM0_CH2, label: col7, identifier: FB_AD10}
 - {pin_num: M11, pin_signal: XTAL0/PTA19/FTM1_FLT0/FTM_CLKIN1/LPTMR0_ALT1/TPM_CLKIN1, label: col7, identifier: XTAL0}
+- {pin_num: A12, pin_signal: ADC0_SE4b/CMP1_IN0/TSI0_CH15/PTC2/SPI0_PCS2/UART1_CTS_b/FTM0_CH1/FB_AD12/SDRAM_A20/I2S0_TX_FS, label: col6, identifier: FTM0_CH1}
 - {pin_num: B12, pin_signal: ADC0_SE14/TSI0_CH13/PTC0/SPI0_PCS4/PDB0_EXTRG/USB0_SOF_OUT/FB_AD14/SDRAM_A22/I2S0_TXD1, label: col1, identifier: ADC0_SE14}
 - {pin_num: J12, pin_signal: CMP3_IN5/PTA25/MII0_TXCLK/FB_A28, label: col8, identifier: CMP3_IN5}
 - {pin_num: M12, pin_signal: EXTAL0/PTA18/FTM0_FLT2/FTM_CLKIN0/TPM_CLKIN0, label: col6, identifier: EXTAL0}
@@ -92,9 +94,9 @@ BOARD_InitPins:
   - {pin_num: C4, peripheral: GPIOD, signal: 'GPIO, 2', pin_signal: PTD2/LLWU_P13/SPI0_SOUT/UART2_RX/FTM3_CH2/FB_AD4/SDRAM_A12/I2C0_SCL}
   - {pin_num: B4, peripheral: GPIOD, signal: 'GPIO, 3', pin_signal: PTD3/SPI0_SIN/UART2_TX/FTM3_CH3/FB_AD3/SDRAM_A11/I2C0_SDA}
   - {pin_num: A5, peripheral: GPIOD, signal: 'GPIO, 0', pin_signal: PTD0/LLWU_P12/SPI0_PCS0/UART2_RTS_b/FTM3_CH0/FB_ALE/FB_CS1_b/FB_TS_b}
-  - {pin_num: M11, peripheral: GPIOA, signal: 'GPIO, 19', pin_signal: XTAL0/PTA19/FTM1_FLT0/FTM_CLKIN1/LPTMR0_ALT1/TPM_CLKIN1}
-  - {pin_num: M12, peripheral: GPIOA, signal: 'GPIO, 18', pin_signal: EXTAL0/PTA18/FTM0_FLT2/FTM_CLKIN0/TPM_CLKIN0}
   - {pin_num: J12, peripheral: GPIOA, signal: 'GPIO, 25', pin_signal: CMP3_IN5/PTA25/MII0_TXCLK/FB_A28}
+  - {pin_num: A12, peripheral: GPIOC, signal: 'GPIO, 2', pin_signal: ADC0_SE4b/CMP1_IN0/TSI0_CH15/PTC2/SPI0_PCS2/UART1_CTS_b/FTM0_CH1/FB_AD12/SDRAM_A20/I2S0_TX_FS}
+  - {pin_num: D8, peripheral: GPIOC, signal: 'GPIO, 5', pin_signal: PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/I2S0_RXD0/FB_AD10/SDRAM_A18/CMP0_OUT/FTM0_CH2}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -117,12 +119,6 @@ void BOARD_InitPins(void)
     CLOCK_EnableClock(kCLOCK_PortD);
     /* Port E Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortE);
-
-    /* PORTA18 (pin M12) is configured as PTA18 */
-    PORT_SetPinMux(BOARD_INITPINS_EXTAL0_PORT, BOARD_INITPINS_EXTAL0_PIN, kPORT_MuxAsGpio);
-
-    /* PORTA19 (pin M11) is configured as PTA19 */
-    PORT_SetPinMux(BOARD_INITPINS_XTAL0_PORT, BOARD_INITPINS_XTAL0_PIN, kPORT_MuxAsGpio);
 
     /* PORTA25 (pin J12) is configured as PTA25 */
     PORT_SetPinMux(BOARD_INITPINS_CMP3_IN5_PORT, BOARD_INITPINS_CMP3_IN5_PIN, kPORT_MuxAsGpio);
@@ -196,6 +192,12 @@ void BOARD_InitPins(void)
                                         kPORT_UnlockRegister};
     /* PORTC11 (pin B7) is configured as I2C1_SDA */
     PORT_SetPinConfig(BOARD_INITPINS_I2C1_SDA_PORT, BOARD_INITPINS_I2C1_SDA_PIN, &I2C1_SDA);
+
+    /* PORTC2 (pin A12) is configured as PTC2 */
+    PORT_SetPinMux(BOARD_INITPINS_FTM0_CH1_PORT, BOARD_INITPINS_FTM0_CH1_PIN, kPORT_MuxAsGpio);
+
+    /* PORTC5 (pin D8) is configured as PTC5 */
+    PORT_SetPinMux(BOARD_INITPINS_FB_AD10_PORT, BOARD_INITPINS_FB_AD10_PIN, kPORT_MuxAsGpio);
 
     /* PORTC6 (pin C8) is configured as I2S0_MCLK */
     PORT_SetPinMux(BOARD_INITPINS_I2S_MCLK_PORT, BOARD_INITPINS_I2S_MCLK_PIN, kPORT_MuxAlt6);

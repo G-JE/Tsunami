@@ -8,6 +8,7 @@ product: Peripherals v1.0
  ******************************************************************************/
 #include <Audio/AudioStreamer.h>
 #include <Audio/AudioOut.h>
+#include <Scanner/KeyMatrix.h>
 #include "peripherals.h"
 
 /*******************************************************************************
@@ -18,4 +19,5 @@ void BOARD_InitBootPeripherals(void)
 	Init_Dialog7212();
 	Init_Dac();
 	Init_Ftm();
+	Init_KeyboardMatrix();
 }

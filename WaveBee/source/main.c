@@ -40,8 +40,7 @@
 #include "clock_config.h"
 #include "MK66F18.h"
 #include "fsl_debug_console.h"
-#include "Audio/AudioStreamer.h"
-#include "Audio/AudioOut.h"
+#include "Scanner\KeyMatrix.h"
 
 
 int main(void) {
@@ -53,22 +52,11 @@ int main(void) {
 
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
-    char command = '1';
-    uint16_t* audioInfo;
-    while(1) {
 
-    	switch(command){
-    	case '1':
-    		audioInfo = StartRecord();
-    		command = '2';
-    		break;
-    	case '2':
-    		StartPlayback(audioInfo);
-    		command = 'x';
-    		break;
-    	default:
-    		break;
-    	}
+    while(1) {
+    	uint32_t delay = 18000000;
+    	while(delay--){}
+    	ScanKeys();
     }
 
     return 0 ;

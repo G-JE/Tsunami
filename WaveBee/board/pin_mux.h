@@ -444,34 +444,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_SPI0_PCS0_NAME "SPI0_PCS0" /*!<@brief Identifier name */
                                                   /* @} */
 
-/*! @name PORTA19 (coord M11), col7
-  @{ */
-#define BOARD_INITPINS_XTAL0_PERIPHERAL GPIOA /*!<@brief Device name: GPIOA */
-#define BOARD_INITPINS_XTAL0_SIGNAL GPIO      /*!<@brief GPIOA signal: GPIO */
-#define BOARD_INITPINS_XTAL0_GPIO GPIOA       /*!<@brief GPIO device name: GPIOA */
-#define BOARD_INITPINS_XTAL0_GPIO_PIN 19U     /*!<@brief PORTA pin index: 19 */
-#define BOARD_INITPINS_XTAL0_PORT PORTA       /*!<@brief PORT device name: PORTA */
-#define BOARD_INITPINS_XTAL0_PIN 19U          /*!<@brief PORTA pin index: 19 */
-#define BOARD_INITPINS_XTAL0_CHANNEL 19       /*!<@brief GPIOA GPIO channel: 19 */
-#define BOARD_INITPINS_XTAL0_PIN_NAME PTA19   /*!<@brief Pin name */
-#define BOARD_INITPINS_XTAL0_LABEL "col7"     /*!<@brief Label */
-#define BOARD_INITPINS_XTAL0_NAME "XTAL0"     /*!<@brief Identifier name */
-                                              /* @} */
-
-/*! @name PORTA18 (coord M12), col6
-  @{ */
-#define BOARD_INITPINS_EXTAL0_PERIPHERAL GPIOA /*!<@brief Device name: GPIOA */
-#define BOARD_INITPINS_EXTAL0_SIGNAL GPIO      /*!<@brief GPIOA signal: GPIO */
-#define BOARD_INITPINS_EXTAL0_GPIO GPIOA       /*!<@brief GPIO device name: GPIOA */
-#define BOARD_INITPINS_EXTAL0_GPIO_PIN 18U     /*!<@brief PORTA pin index: 18 */
-#define BOARD_INITPINS_EXTAL0_PORT PORTA       /*!<@brief PORT device name: PORTA */
-#define BOARD_INITPINS_EXTAL0_PIN 18U          /*!<@brief PORTA pin index: 18 */
-#define BOARD_INITPINS_EXTAL0_CHANNEL 18       /*!<@brief GPIOA GPIO channel: 18 */
-#define BOARD_INITPINS_EXTAL0_PIN_NAME PTA18   /*!<@brief Pin name */
-#define BOARD_INITPINS_EXTAL0_LABEL "col6"     /*!<@brief Label */
-#define BOARD_INITPINS_EXTAL0_NAME "EXTAL0"    /*!<@brief Identifier name */
-                                               /* @} */
-
 /*! @name PORTA25 (coord J12), col8
   @{ */
 #define BOARD_INITPINS_CMP3_IN5_PERIPHERAL GPIOA /*!<@brief Device name: GPIOA */
@@ -485,6 +457,34 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_CMP3_IN5_LABEL "col8"     /*!<@brief Label */
 #define BOARD_INITPINS_CMP3_IN5_NAME "CMP3_IN5"  /*!<@brief Identifier name */
                                                  /* @} */
+
+/*! @name PORTC2 (coord A12), col6
+  @{ */
+#define BOARD_INITPINS_FTM0_CH1_PERIPHERAL GPIOC /*!<@brief Device name: GPIOC */
+#define BOARD_INITPINS_FTM0_CH1_SIGNAL GPIO      /*!<@brief GPIOC signal: GPIO */
+#define BOARD_INITPINS_FTM0_CH1_GPIO GPIOC       /*!<@brief GPIO device name: GPIOC */
+#define BOARD_INITPINS_FTM0_CH1_GPIO_PIN 2U      /*!<@brief PORTC pin index: 2 */
+#define BOARD_INITPINS_FTM0_CH1_PORT PORTC       /*!<@brief PORT device name: PORTC */
+#define BOARD_INITPINS_FTM0_CH1_PIN 2U           /*!<@brief PORTC pin index: 2 */
+#define BOARD_INITPINS_FTM0_CH1_CHANNEL 2        /*!<@brief GPIOC GPIO channel: 2 */
+#define BOARD_INITPINS_FTM0_CH1_PIN_NAME PTC2    /*!<@brief Pin name */
+#define BOARD_INITPINS_FTM0_CH1_LABEL "col6"     /*!<@brief Label */
+#define BOARD_INITPINS_FTM0_CH1_NAME "FTM0_CH1"  /*!<@brief Identifier name */
+                                                 /* @} */
+
+/*! @name PORTC5 (coord D8), col7
+  @{ */
+#define BOARD_INITPINS_FB_AD10_PERIPHERAL GPIOC /*!<@brief Device name: GPIOC */
+#define BOARD_INITPINS_FB_AD10_SIGNAL GPIO      /*!<@brief GPIOC signal: GPIO */
+#define BOARD_INITPINS_FB_AD10_GPIO GPIOC       /*!<@brief GPIO device name: GPIOC */
+#define BOARD_INITPINS_FB_AD10_GPIO_PIN 5U      /*!<@brief PORTC pin index: 5 */
+#define BOARD_INITPINS_FB_AD10_PORT PORTC       /*!<@brief PORT device name: PORTC */
+#define BOARD_INITPINS_FB_AD10_PIN 5U           /*!<@brief PORTC pin index: 5 */
+#define BOARD_INITPINS_FB_AD10_CHANNEL 5        /*!<@brief GPIOC GPIO channel: 5 */
+#define BOARD_INITPINS_FB_AD10_PIN_NAME PTC5    /*!<@brief Pin name */
+#define BOARD_INITPINS_FB_AD10_LABEL "col7"     /*!<@brief Label */
+#define BOARD_INITPINS_FB_AD10_NAME "FB_AD10"   /*!<@brief Identifier name */
+                                                /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
