@@ -26,13 +26,13 @@ void Init_Ftm(void){
 	FTM_GetDefaultConfig(&ftmConfig);
 	ftmConfig.prescale = kFTM_Prescale_Divide_4;
 	FTM_Init(DAC_TRIG, &ftmConfig);
-	FTM_SetTimerPeriod(DAC_TRIG, USEC_TO_COUNT(16u, TRIGGER_CLKSRC));
+	FTM_SetTimerPeriod(DAC_TRIG, USEC_TO_COUNT(128u, TRIGGER_CLKSRC));
 	FTM_EnableInterrupts(DAC_TRIG, kFTM_TimeOverflowInterruptEnable);
 	EnableIRQ(DAC_TRIG_IRQ);
 }
 
 void StartPlayback(uint16_t* audio){
-	FTM_SetTimerPeriod(DAC_TRIG, USEC_TO_COUNT(32u, TRIGGER_CLKSRC));
+	FTM_SetTimerPeriod(DAC_TRIG, USEC_TO_COUNT(128u, TRIGGER_CLKSRC));
 	FTM_EnableInterrupts(DAC_TRIG, kFTM_TimeOverflowInterruptEnable);
 	EnableIRQ(DAC_TRIG_IRQ);
 	FTM_StartTimer(DAC_TRIG, kFTM_SystemClock);
