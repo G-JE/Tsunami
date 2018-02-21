@@ -43,7 +43,8 @@
 #define BUFFER_NUM (4)
 
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
+void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void Init_Dialog7212(void);
-uint16_t* StartStream(uint8_t time_s);
+uint16_t* StartRecord();
 
 #endif /* AUDIOSTREAM_AUDIOSTREAMER_H_ */

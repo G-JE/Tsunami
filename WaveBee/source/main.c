@@ -36,9 +36,13 @@
 #include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
+#include "fsl_sysmpu.h"
 #include "clock_config.h"
 #include "MK66F18.h"
 #include "fsl_debug_console.h"
+#include "Audio/AudioStreamer.h"
+#include "Audio/AudioOut.h"
+
 
 int main(void) {
 
@@ -46,15 +50,21 @@ int main(void) {
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
+
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
-    char command;
-
+    char command = '1';
+    uint16_t* audioInfo;
     while(1) {
-    	command = GETCHAR();
 
     	switch(command){
     	case '1':
+    		audioInfo = StartRecord();
+    		command = '2';
+    		break;
+    	case '2':
+    		StartPlayback(audioInfo);
+    		command = 'x';
     		break;
     	default:
     		break;

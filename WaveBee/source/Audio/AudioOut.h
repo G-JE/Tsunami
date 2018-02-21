@@ -15,7 +15,7 @@
 #define AUDIO_DAC DAC0
 #define DAC_TRIG_IRQ FTM0_IRQn
 #define DAC_TRIG_Callback FTM0_IRQHandler
-#define TRIGGER_CLKSRC CLOCK_GetFreq(kCLOCK_BusClk)
+#define TRIGGER_CLKSRC (CLOCK_GetFreq(kCLOCK_BusClk)/4)
 
 void Init_Ftm(void);
 void Init_Dac(void);

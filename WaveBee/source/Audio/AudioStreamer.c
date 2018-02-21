@@ -18,28 +18,7 @@ volatile uint32_t beginCount = 0;
 volatile uint32_t sendCount = 0;
 volatile uint32_t receiveCount = 0;
 i2c_master_handle_t i2cHandle = {{0, 0, kI2C_Write, 0, 0, NULL, 0}, 0, 0, NULL, NULL};
-static uint16_t audioBuff[80000];
-
-void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
-{
-    sai_transfer_t xfer = {0};
-
-    receiveCount++;
-
-    if (receiveCount == beginCount)
-    {
-        isrxFinished = true;
-        SAI_TransferTerminateReceiveEDMA(base, handle);
-        receiveCount = 0;
-    }
-    else
-    {
-
-		xfer.data = (uint8_t *) audioBuff + ((receiveCount - 1U) * BUFFER_SIZE);
-		xfer.dataSize = BUFFER_SIZE;
-		SAI_TransferReceiveEDMA(base, handle, &xfer);
-    }
-}
+uint16_t audioBuff[80000];
 
 void Init_Dialog7212(void){
     sai_config_t config;
@@ -51,12 +30,12 @@ void Init_Dialog7212(void){
 
     EDMA_GetDefaultConfig(&dmaConfig);
     EDMA_Init(MIC_DMA, &dmaConfig);
-    EDMA_CreateHandle(&dmaTxHandle, MIC_DMA, Dialog_TX_SOURCE);
     EDMA_CreateHandle(&dmaRxHandle, MIC_DMA, Dialog_RX_CHANNEL);
+    EDMA_CreateHandle(&dmaTxHandle, MIC_DMA, Dialog_TX_CHANNEL);
 
     DMAMUX_Init(MIC_DMAMUX);
-    DMAMUX_SetSource(MIC_DMAMUX, Dialog_TX_SOURCE, (uint8_t)Dialog_TX_SOURCE);
-    DMAMUX_EnableChannel(MIC_DMAMUX, Dialog_TX_SOURCE);
+    DMAMUX_SetSource(MIC_DMAMUX, Dialog_TX_CHANNEL, (uint8_t)Dialog_TX_SOURCE);
+    DMAMUX_EnableChannel(MIC_DMAMUX, Dialog_TX_CHANNEL);
     DMAMUX_SetSource(MIC_DMAMUX, Dialog_RX_CHANNEL, (uint8_t)Dialog_RX_SOURCE);
     DMAMUX_EnableChannel(MIC_DMAMUX, Dialog_RX_CHANNEL);
 
@@ -106,19 +85,44 @@ void Init_Dialog7212(void){
 	DA7212_ConfigAudioFormat(&codecHandle, format.sampleRate_Hz, format.masterClockHz, format.bitWidth);
 	DA7212_ChangeOutput(&codecHandle, kDA7212_Output_HP);
 
+    SAI_TransferTxCreateHandleEDMA(Dialog_SAI, &txHandle, txCallback, NULL, &dmaTxHandle);
 	SAI_TransferRxCreateHandleEDMA(Dialog_SAI, &rxHandle, rxCallback, NULL, &dmaRxHandle);
 
 	mclkSourceClockHz = Dialog_CLK_FREQ;
 	SAI_TransferRxSetFormatEDMA(Dialog_SAI, &rxHandle, &format, mclkSourceClockHz, format.masterClockHz);
+    SAI_TransferTxSetFormatEDMA(Dialog_SAI, &txHandle, &format, mclkSourceClockHz, format.masterClockHz);
 
 	/* Enable interrupt to handle FIFO error */
+    SAI_TxEnableInterrupts(Dialog_SAI, kSAI_FIFOErrorInterruptEnable);
 	SAI_RxEnableInterrupts(Dialog_SAI, kSAI_FIFOErrorInterruptEnable);
 	EnableIRQ(Dialog_RX_IRQ);
+    EnableIRQ(Dialog_TX_IRQ);
 
+	//Activate the DA7212 to read from the MEMS Mic
 	DA7212_ChangeInput(&codecHandle, kDA7212_Input_MIC1_Dig);
 }
 
-uint16_t* StartStream(uint8_t time_s){
+void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
+{
+    sai_transfer_t xfer = {0};
+    receiveCount++;
+
+    if (receiveCount == beginCount)
+    {
+        isrxFinished = true;
+        SAI_TransferTerminateReceiveEDMA(base, handle);
+        receiveCount = 0;
+    }
+    else
+    {
+		xfer.data = (uint8_t *) audioBuff + ((receiveCount) * BUFFER_SIZE * 2);
+		xfer.dataSize = BUFFER_SIZE * 2;
+		SAI_TransferReceiveEDMA(base, handle, &xfer);
+    }
+}
+
+//Currently have a maximum of 5s of recording time at 16kHz data
+uint16_t* StartRecord(){
 
 	sai_transfer_t xfer = {0};
 
@@ -130,30 +134,22 @@ uint16_t* StartStream(uint8_t time_s){
 	receiveCount = 0;
 
 	/* Compute the begin count */
-	beginCount = time_s * SAMPLE_RATE / BUFFER_SIZE;
+	//hard code in 5s of recording to start, will have to be based on button press later
+	beginCount = 5 * SAMPLE_RATE / BUFFER_SIZE;
 
-	xfer.dataSize = BUFFER_SIZE;
+	xfer.dataSize = BUFFER_SIZE * 2;
 
 	/* Start record first */
-	xfer.data = (uint8_t *) audioBuff;
-	SAI_TransferReceiveEDMA(Dialog_SAI, &rxHandle, &xfer);
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        xfer.data = (uint8_t *) audioBuff + i * BUFFER_SIZE * 2;
+        SAI_TransferReceiveEDMA(Dialog_SAI, &rxHandle, &xfer);
+    }
 
 	/* Wait for record and playback finished */
 	while (isrxFinished != true){}
 
 	return audioBuff;
-}
-
-void Dialog_UserTxIRQHandler(void)
-{
-    /* Clear the FEF flag */
-    SAI_TxClearStatusFlags(Dialog_SAI, kSAI_FIFOErrorFlag);
-    SAI_TxSoftwareReset(Dialog_SAI, kSAI_ResetTypeFIFO);
-
-    /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
-  exception return operation might vector to incorrect interrupt */
-
-    __DSB();
 }
 
 void Dialog_UserRxIRQHandler(void)
@@ -163,6 +159,26 @@ void Dialog_UserRxIRQHandler(void)
 
     /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */
-
     __DSB();
+}
+
+void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
+{
+    sai_transfer_t xfer = {0};
+
+    sendCount++;
+
+    if (sendCount == beginCount)
+    {
+        istxFinished = true;
+        SAI_TransferTerminateSendEDMA(base, handle);
+        sendCount = 0;
+    }
+    else
+    {
+
+		xfer.data = (uint8_t *) audioBuff + ((sendCount - 1U) % BUFFER_NUM) * BUFFER_SIZE;
+		xfer.dataSize = BUFFER_SIZE;
+		SAI_TransferSendEDMA(base, handle, &xfer);
+    }
 }

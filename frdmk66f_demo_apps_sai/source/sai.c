@@ -868,6 +868,7 @@ int main(void)
         }
     }
 
+
     I2C_MasterDeinit(DEMO_I2C);
     PRINTF("\n\r SAI demo finished!\n\r ");
     while (1)
