@@ -55,7 +55,7 @@ void Init_Dialog7212(void){
     SAI_RxInit(Dialog_SAI, &config);
 
     /* Configure the audio format */
-	format.bitWidth = kSAI_WordWidth8bits;
+	format.bitWidth = kSAI_WordWidth16bits;
 	format.channel = 0U;
 	format.sampleRate_Hz = SAMPLE_RATE;
 
