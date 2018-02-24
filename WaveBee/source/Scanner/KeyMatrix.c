@@ -85,6 +85,8 @@ uint32_t ScanKeys(void){
 		}
 		// deactivate the pin column
 		GPIO_PinWrite(COL_GPIO[i], COL_PINS[i], 0u);
+		uint16_t i = 500000;
+		while(i--){}
 	}
 
 	return keyData;
