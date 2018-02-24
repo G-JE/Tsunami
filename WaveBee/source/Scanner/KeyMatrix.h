@@ -55,6 +55,9 @@
 #define PORT_COL7	PORTB
 #define PORT_COL8	PORTD
 
+// number of voices to be checked for
+#define Voice_Num 4u
+
 
 void Init_KeyboardMatrix(void);
 uint32_t ScanKeys(void);

@@ -11,6 +11,13 @@
 #include "AudioStreamer.h"
 #include "AudioOut.h"
 
+#define RECORD_BUTTON_PIN 8u
+#define RECORD_BUTTON_PORT PORTA
+#define RECORD_BUTTON_GPIO GPIOA
+#define RECORD_BUTTON_HANDLER PORTA_IRQHandler
+#define RECORD_BUTTON_IRQ PORTA_IRQn
+
+void Init_Buttons(void);
 void Init_AudioChannel(void);
 
 #endif /* AUDIO_AUDIOCONTROLLER_H_ */

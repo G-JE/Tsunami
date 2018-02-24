@@ -8,6 +8,8 @@
 #include "fsl_sai_edma.h"
 #include "fsl_dialog7212.h"
 #include "fsl_dmamux.h"
+#include "fsl_gpio.h"
+#include "fsl_port.h"
 
 #ifndef AUDIOSTREAM_AUDIOSTREAMER_H_
 #define AUDIOSTREAM_AUDIOSTREAMER_H_
@@ -42,9 +44,16 @@
 #define BUFFER_SIZE (512)
 #define BUFFER_NUM (4)
 
+#define RECORD_BUTTON_PIN 8u
+#define RECORD_BUTTON_PORT PORTA
+#define RECORD_BUTTON_GPIO GPIOA
+#define RECORD_BUTTON_HANDLER PORTA_IRQHandler
+#define RECORD_BUTTON_IRQ PORTA_IRQn
+
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void Init_Dialog7212(void);
 uint16_t* StartRecord();
+void Init_Buttons(void);
 
 #endif /* AUDIOSTREAM_AUDIOSTREAMER_H_ */

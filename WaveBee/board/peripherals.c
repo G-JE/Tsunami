@@ -20,4 +20,5 @@ void BOARD_InitBootPeripherals(void)
 	Init_Dac();
 	Init_Ftm();
 	Init_KeyboardMatrix();
+	Init_Buttons();
 }

@@ -107,7 +107,7 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
     sai_transfer_t xfer = {0};
     receiveCount++;
 
-    if (receiveCount == beginCount)
+    if (!recording)
     {
         isrxFinished = true;
         SAI_TransferTerminateReceiveEDMA(base, handle);
@@ -121,7 +121,6 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
     }
 }
 
-//Currently have a maximum of 5s of recording time at 16kHz data
 uint16_t* StartRecord(){
 
 	sai_transfer_t xfer = {0};
