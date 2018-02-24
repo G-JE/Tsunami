@@ -84,7 +84,7 @@ uint32_t ScanKeys(void){
 		// deactivate the pin column
 		GPIO_PinWrite(COL_GPIO[i], COL_PINS[i], 0u);
 
-		//requires a slight delay to keep
+		// requires a slight delay to not have false triggers
 		uint16_t delay = ~0;
 		while(delay--);
 	}

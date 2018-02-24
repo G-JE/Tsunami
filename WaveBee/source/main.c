@@ -40,7 +40,7 @@
 #include "clock_config.h"
 #include "MK66F18.h"
 #include "fsl_debug_console.h"
-#include "Scanner\KeyMatrix.h"
+#include "Audio\AudioController.h"
 
 
 int main(void) {
@@ -53,11 +53,7 @@ int main(void) {
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
 
-    while(1) {
-    	uint32_t delay = 1000000;
-    	while(delay--){}
-    	UpdateActiveKeys();
-    }
+    BeginAudioController();
 
     return 0 ;
 }

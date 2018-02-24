@@ -10,6 +10,7 @@
 
 #include "AudioStreamer.h"
 #include "AudioOut.h"
+#include "fsl_debug_console.h"
 
 #define RECORD_BUTTON_PIN 8u
 #define RECORD_BUTTON_PORT PORTA
@@ -18,6 +19,6 @@
 #define RECORD_BUTTON_IRQ PORTA_IRQn
 
 void Init_Buttons(void);
-void Init_AudioChannel(void);
+void BeginAudioController(void);
 
 #endif /* AUDIO_AUDIOCONTROLLER_H_ */

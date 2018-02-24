@@ -20,7 +20,6 @@
 void Init_Ftm(void);
 void Init_Dac(void);
 void UpdateDac(uint16_t value);
-void StartPlayback(uint16_t* audioData);
-void StopPlayback(void);
+void StartPlayback(volatile uint16_t* audioData);
 
 #endif /* AUDIO_AUDIOOUT_H_ */

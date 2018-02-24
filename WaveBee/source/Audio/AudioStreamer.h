@@ -53,7 +53,7 @@
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void Init_Dialog7212(void);
-uint16_t* StartRecord();
+uint32_t StartRecording(bool* recording);
 void Init_Buttons(void);
 
 #endif /* AUDIOSTREAM_AUDIOSTREAMER_H_ */

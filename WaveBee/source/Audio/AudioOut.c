@@ -7,8 +7,7 @@
 
 #include "AudioOut.h"
 
-uint16_t index = 0;
-uint16_t* audioData;
+volatile uint16_t* AudioRegister;
 
 void Init_Dac(void){
 	dac_config_t dacConfig;
@@ -31,18 +30,15 @@ void Init_Ftm(void){
 	EnableIRQ(DAC_TRIG_IRQ);
 }
 
-void StartPlayback(uint16_t* audio){
+void StartPlayback(volatile uint16_t* audio){
+
+	// get a handle on the 16-bit value that will be updated by the controller
+	AudioRegister = audio;
+
 	FTM_SetTimerPeriod(DAC_TRIG, USEC_TO_COUNT(128u, TRIGGER_CLKSRC));
 	FTM_EnableInterrupts(DAC_TRIG, kFTM_TimeOverflowInterruptEnable);
 	EnableIRQ(DAC_TRIG_IRQ);
 	FTM_StartTimer(DAC_TRIG, kFTM_SystemClock);
-	index = 0;
-	audioData = audio;
-	// do something with audio data
-}
-
-void StopPlayback(void){
-	FTM_StopTimer(DAC_TRIG);
 }
 
 void UpdateDac(uint16_t value){
@@ -52,11 +48,7 @@ void UpdateDac(uint16_t value){
 void DAC_TRIG_Callback(void){
 	FTM_ClearStatusFlags(DAC_TRIG, kFTM_TimeOverflowFlag);
 
-	// increment index of play back. . .
-	index++;
-	index %= 80000;
-
 	// Right shift information on the DAC by 4 to compress to 12 bits
-	UpdateDac((audioData[index] >> 4));
+	UpdateDac(*AudioRegister >> 4);
 
 }

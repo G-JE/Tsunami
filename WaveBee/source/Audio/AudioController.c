@@ -5,8 +5,11 @@
  *      Author: ericksong
  */
 
+#include "AudioController.h"
+
 uint32_t RecordingLength = 0;
 bool recording = false;
+uint16_t audioData = 0;
 
 void RECORD_BUTTON_HANDLER(void){
 	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, (1U << RECORD_BUTTON_PIN));
@@ -46,4 +49,14 @@ void Init_Buttons(void){
 	PORT_SetPinInterruptConfig(RECORD_BUTTON_PORT, RECORD_BUTTON_PIN, kPORT_InterruptEitherEdge);
 	EnableIRQ(RECORD_BUTTON_IRQ);
 	GPIO_PinInit(RECORD_BUTTON_GPIO, RECORD_BUTTON_PIN, &inputConfig);
+}
+
+void BeginAudioController(void){
+	StartPlayback(&audioData);
+
+	// forever loop for handling all audio streams in an out
+	while(1){
+	if(recording)
+		RecordingLength = StartRecording(&recording);
+	}
 }

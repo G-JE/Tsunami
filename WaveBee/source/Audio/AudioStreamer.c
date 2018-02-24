@@ -19,6 +19,8 @@ volatile uint32_t sendCount = 0;
 volatile uint32_t receiveCount = 0;
 i2c_master_handle_t i2cHandle = {{0, 0, kI2C_Write, 0, 0, NULL, 0}, 0, 0, NULL, NULL};
 uint16_t audioBuff[80000];
+uint32_t BufferLength = 0;
+bool* record;
 
 void Init_Dialog7212(void){
     sai_config_t config;
@@ -107,7 +109,7 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
     sai_transfer_t xfer = {0};
     receiveCount++;
 
-    if (!recording)
+    if (!*record)
     {
         isrxFinished = true;
         SAI_TransferTerminateReceiveEDMA(base, handle);
@@ -118,11 +120,14 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
 		xfer.data = (uint8_t *) audioBuff + ((receiveCount) * BUFFER_SIZE * 2);
 		xfer.dataSize = BUFFER_SIZE * 2;
 		SAI_TransferReceiveEDMA(base, handle, &xfer);
+		BufferLength += BUFFER_SIZE * 2;
     }
 }
 
-uint16_t* StartRecord(){
+uint32_t StartRecording(bool* r){
 
+	// get handle on the variable to indicate if system is still recording
+	record = r;
 	sai_transfer_t xfer = {0};
 
 	/* First clear the buffer */
@@ -131,6 +136,7 @@ uint16_t* StartRecord(){
 	isrxFinished = false;
 	sendCount = 0;
 	receiveCount = 0;
+	BufferLength = 0;
 
 	/* Compute the begin count */
 	//hard code in 5s of recording to start, will have to be based on button press later
@@ -143,12 +149,13 @@ uint16_t* StartRecord(){
     {
         xfer.data = (uint8_t *) audioBuff + i * BUFFER_SIZE * 2;
         SAI_TransferReceiveEDMA(Dialog_SAI, &rxHandle, &xfer);
+        BufferLength += BUFFER_SIZE * 2;
     }
 
 	/* Wait for record and playback finished */
 	while (isrxFinished != true){}
 
-	return audioBuff;
+	return BufferLength;
 }
 
 void Dialog_UserRxIRQHandler(void)
