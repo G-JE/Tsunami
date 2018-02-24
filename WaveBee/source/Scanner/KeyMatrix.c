@@ -20,6 +20,8 @@ PORT_Type* ROW_PORTS[4] = { PORT_ROW1, PORT_ROW2, PORT_ROW3, PORT_ROW4 };
 GPIO_Type* ROW_GPIO[4] = { GPIO_ROW1, GPIO_ROW2, GPIO_ROW3, GPIO_ROW4 };
 uint8_t ROW_PINS[4] 	= { PIN_ROW1, PIN_ROW2, PIN_ROW3, PIN_ROW4 };
 
+uint8_t ActiveKeys[4] = {0};
+uint32_t PreviousKeyState, CurrentKeyState;
 
 void Init_KeyboardMatrix(void){
 	// Initialize all rows as outputs and all columns as inputs
@@ -38,29 +40,24 @@ void Init_KeyboardMatrix(void){
 									/* Pin Control Register fields [15:0] are not locked */
 									kPORT_UnlockRegister};
 
-	// Columns are inputs to be read from
-	for(uint8_t i = 0; i < 8; i++){
-		PORT_SetPinConfig(COL_PORTS[i], COL_PINS[i], &gpio_pin);
-	}
-
-	// Rows are outputs to be driven
-	for(uint8_t i = 0; i < 4; i++){
-		PORT_SetPinConfig(ROW_PORTS[i], ROW_PINS[i], &gpio_pin);
-	}
-
-
-	gpio_pin_config_t pinAsOutput = {kGPIO_DigitalOutput, 0U};
+	gpio_pin_config_t pinAsOutput = {kGPIO_DigitalOutput, 1U};
 	gpio_pin_config_t pinAsInput = {kGPIO_DigitalInput};
 
+	// Columns are inputs to be driven
+	for(uint8_t i = 0; i < 8; i++)
+		PORT_SetPinConfig(COL_PORTS[i], COL_PINS[i], &gpio_pin);
+
+	// Rows are outputs to be read from
+	for(uint8_t i = 0; i < 4; i++)
+		PORT_SetPinConfig(ROW_PORTS[i], ROW_PINS[i], &gpio_pin);
+
 	// Columns are inputs to be read from
-	for(uint8_t i = 0; i < 8; i++){
-		GPIO_PinInit(COL_GPIO[i], COL_PINS[i], &pinAsInput);
-	}
+	for(uint8_t i = 0; i < 8; i++)
+		GPIO_PinInit(COL_GPIO[i], COL_PINS[i], &pinAsOutput);
 
 	// Rows are outputs to be driven
-	for(uint8_t i = 0; i < 4; i++){
-		GPIO_PinInit(ROW_GPIO[i], ROW_PINS[i], &pinAsOutput);
-	}
+	for(uint8_t i = 0; i < 4; i++)
+		GPIO_PinInit(ROW_GPIO[i], ROW_PINS[i], &pinAsInput);
 }
 
 // function used for determining what keys are pressed
@@ -70,13 +67,14 @@ uint32_t ScanKeys(void){
 	uint32_t active = 0;
 	uint32_t keyData = 0;
 
-	for(uint8_t i = 0; i < 4; i++){
-		// activate the row
-		GPIO_PinWrite(ROW_GPIO[i], ROW_PINS[i], 1u);
+	for(uint8_t i = 0; i < 8; i++){
+		// activate the column
+		GPIO_PinWrite(COL_GPIO[i], COL_PINS[i], 1u);
 
-		for(uint8_t j = 0; j < 8; j++){
-			// read of a column has a key press
-			active = GPIO_PinRead(COL_GPIO[j], COL_PINS[j]);
+		for(uint8_t j = 0; j < 4; j++){
+			// read of a row has a key press
+			active = GPIO_PinRead(ROW_GPIO[j], ROW_PINS[j]);
+			position = i + (j*8);
 			if(active){
 				// clear active bits and move a 1 to the key position
 				active = (active & 0) | (1u << position);
@@ -84,14 +82,58 @@ uint32_t ScanKeys(void){
 				// pack all of the key information into a 32 bit register
 				keyData |= active;
 			}
-			position++;
 		}
-		// deactivate the pin row
-		GPIO_PinWrite(ROW_GPIO[i], ROW_PINS[i], 0u);
+		// deactivate the pin column
+		GPIO_PinWrite(COL_GPIO[i], COL_PINS[i], 0u);
 	}
 
-	//output the key data for debug
-	printf("%x\r\n", keyData);
-
 	return keyData;
+}
+
+void UpdateActiveKeys(void){
+	CurrentKeyState = ScanKeys();
+	uint32_t ChangedKeyState = CurrentKeyState ^ PreviousKeyState;
+
+	// If there is a change in state update the active keys
+	if(ChangedKeyState){
+		// loop for opening or closing the gate for a particular key
+		for(uint8_t i = 0; i < 4; i++){
+			// if the key is active check if it is still active
+			if(ActiveKeys[i]){
+				if(!(CurrentKeyState & (1 << (ActiveKeys[i]-1)))){
+					EndGate(ActiveKeys[i]);
+					ActiveKeys[i] = 0;
+				}
+			}
+			else{
+				// check each key to see if it has been changed to active
+				for(uint8_t j = 0; j < 32; j++){
+					// if both the key has changed to active add it to the active keys and open gate
+					if((CurrentKeyState & (1 << j)) & (ChangedKeyState & (1 << j))){
+						bool duplicate = false;
+						for(uint8_t k = 0; k < 4; k++)
+							duplicate |= (ActiveKeys[k] == (j+1));
+
+						if(!duplicate){
+							ActiveKeys[i] = j + 1;
+							StartGate(j+1);
+						}
+					}
+				}
+			}
+		}
+	}
+	PreviousKeyState = CurrentKeyState;
+	for(uint8_t i = 0; i < 4; i++)
+		printf("%d\t", ActiveKeys[i]);
+	printf("\n");
+
+}
+
+void StartGate(uint8_t index){
+
+}
+
+void EndGate(uint8_t index){
+
 }

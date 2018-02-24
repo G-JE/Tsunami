@@ -54,9 +54,9 @@ int main(void) {
     BOARD_InitDebugConsole();
 
     while(1) {
-    	uint32_t delay = 18000000;
+    	uint32_t delay = 1000000;
     	while(delay--){}
-    	ScanKeys();
+    	UpdateActiveKeys();
     }
 
     return 0 ;

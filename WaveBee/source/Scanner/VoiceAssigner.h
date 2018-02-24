@@ -5,8 +5,8 @@
  *      Author: ericksong
  */
 
-#ifndef SEQUENCER_VOICEASSIGNER_H_
-#define SEQUENCER_VOICEASSIGNER_H_
+#ifndef SCANNER_VOICEASSIGNER_H_
+#define SCANNER_VOICEASSIGNER_H_
 
 
 
