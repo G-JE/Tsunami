@@ -109,18 +109,21 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
     sai_transfer_t xfer = {0};
     receiveCount++;
 
-    if (!*record)
+    if (!*record || (BufferLength > 75000))
     {
         isrxFinished = true;
         SAI_TransferTerminateReceiveEDMA(base, handle);
         receiveCount = 0;
+
+        // need to look further into this, there is a 6 packet offset
+        BufferLength += 3072;
     }
     else
     {
 		xfer.data = (uint8_t *) audioBuff + ((receiveCount) * BUFFER_SIZE * 2);
 		xfer.dataSize = BUFFER_SIZE * 2;
 		SAI_TransferReceiveEDMA(base, handle, &xfer);
-		BufferLength += BUFFER_SIZE * 2;
+		BufferLength += BUFFER_SIZE;
     }
 }
 
@@ -142,6 +145,7 @@ uint32_t StartRecording(bool* r){
 	//hard code in 5s of recording to start, will have to be based on button press later
 	beginCount = 5 * SAMPLE_RATE / BUFFER_SIZE;
 
+	// data being received is double the length 16/8bit
 	xfer.dataSize = BUFFER_SIZE * 2;
 
 	/* Start record first */
@@ -149,7 +153,7 @@ uint32_t StartRecording(bool* r){
     {
         xfer.data = (uint8_t *) audioBuff + i * BUFFER_SIZE * 2;
         SAI_TransferReceiveEDMA(Dialog_SAI, &rxHandle, &xfer);
-        BufferLength += BUFFER_SIZE * 2;
+        BufferLength += BUFFER_SIZE;
     }
 
 	/* Wait for record and playback finished */

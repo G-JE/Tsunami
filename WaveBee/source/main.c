@@ -53,6 +53,7 @@ int main(void) {
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
 
+    // used to test some basic audio control functionality
     BeginAudioController();
 
     return 0 ;

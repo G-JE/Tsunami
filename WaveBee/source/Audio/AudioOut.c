@@ -34,10 +34,6 @@ void StartPlayback(volatile uint16_t* audio){
 
 	// get a handle on the 16-bit value that will be updated by the controller
 	AudioRegister = audio;
-
-	FTM_SetTimerPeriod(DAC_TRIG, USEC_TO_COUNT(128u, TRIGGER_CLKSRC));
-	FTM_EnableInterrupts(DAC_TRIG, kFTM_TimeOverflowInterruptEnable);
-	EnableIRQ(DAC_TRIG_IRQ);
 	FTM_StartTimer(DAC_TRIG, kFTM_SystemClock);
 }
 

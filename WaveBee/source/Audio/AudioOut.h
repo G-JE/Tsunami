@@ -10,6 +10,7 @@
 
 #include "fsl_dac.h"
 #include "fsl_ftm.h"
+#include "fsl_debug_console.h"
 
 #define DAC_TRIG FTM0
 #define AUDIO_DAC DAC0

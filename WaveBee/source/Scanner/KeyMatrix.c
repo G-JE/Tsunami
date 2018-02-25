@@ -20,12 +20,13 @@ PORT_Type* ROW_PORTS[4] = { PORT_ROW1, PORT_ROW2, PORT_ROW3, PORT_ROW4 };
 GPIO_Type* ROW_GPIO[4] = { GPIO_ROW1, GPIO_ROW2, GPIO_ROW3, GPIO_ROW4 };
 uint8_t ROW_PINS[4] 	= { PIN_ROW1, PIN_ROW2, PIN_ROW3, PIN_ROW4 };
 
-uint8_t ActiveKeys[Voice_Num] = {0};
 uint32_t PreviousKeyState, CurrentKeyState;
+uint8_t* ActiveKeys;
 
-void Init_KeyboardMatrix(void){
+void Init_KeyboardMatrix(uint8_t* keyAssignments){
 	// Initialize all rows as outputs and all columns as inputs
 
+	ActiveKeys = keyAssignments;
 	port_pin_config_t gpio_pin = { kPORT_PullDown,
 									/* Fast slew rate is configured */
 									kPORT_FastSlewRate,
@@ -103,7 +104,7 @@ void UpdateActiveKeys(void){
 			// if the key is active check if it is still active
 			if(ActiveKeys[i]){
 				if(!(CurrentKeyState & (1 << (ActiveKeys[i]-1)))){
-					EndGate(ActiveKeys[i]);
+					EndGate(i);
 					ActiveKeys[i] = 0;
 				}
 			}
@@ -118,7 +119,7 @@ void UpdateActiveKeys(void){
 
 						if(!duplicate){
 							ActiveKeys[i] = j + 1;
-							StartGate(j+1);
+							StartGate(i);
 						}
 					}
 				}
@@ -126,12 +127,4 @@ void UpdateActiveKeys(void){
 		}
 	}
 	PreviousKeyState = CurrentKeyState;
-}
-
-void StartGate(uint8_t index){
-
-}
-
-void EndGate(uint8_t index){
-
 }

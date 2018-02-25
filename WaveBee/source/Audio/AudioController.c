@@ -56,7 +56,10 @@ void BeginAudioController(void){
 
 	// forever loop for handling all audio streams in an out
 	while(1){
-	if(recording)
-		RecordingLength = StartRecording(&recording);
+
+		// when recording is triggered start a record session, overwriting previous sample
+		if(recording)
+			RecordingLength = StartRecording(&recording);
+
 	}
 }

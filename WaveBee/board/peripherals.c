@@ -9,6 +9,7 @@ product: Peripherals v1.0
 #include <Audio/AudioStreamer.h>
 #include <Audio/AudioOut.h>
 #include <Scanner/KeyMatrix.h>
+#include <Scanner/VoiceAssigner.h>
 #include "peripherals.h"
 
 /*******************************************************************************
@@ -21,4 +22,5 @@ void BOARD_InitBootPeripherals(void)
 	Init_Ftm();
 	Init_KeyboardMatrix();
 	Init_Buttons();
+	Init_MasterClock();
 }
