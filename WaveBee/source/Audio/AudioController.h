@@ -11,6 +11,7 @@
 #include "AudioStreamer.h"
 #include "AudioOut.h"
 #include "fsl_debug_console.h"
+#include "Scanner/VoiceAssigner.h"
 
 #define RECORD_BUTTON_PIN 8u
 #define RECORD_BUTTON_PORT PORTA

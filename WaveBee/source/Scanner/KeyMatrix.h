@@ -59,7 +59,7 @@
 #define Voice_Num 4u
 
 
-void Init_KeyboardMatrix(void);
+void Init_KeyboardMatrix(uint8_t* keyAssignments);
 uint32_t ScanKeys(void);
 void UpdateActiveKeys(void);
 void StartGate(uint8_t index);

@@ -22,7 +22,8 @@
 void BeginVoiceAssigner(void);
 void Init_MasterClock(void);
 void CombineSounds(void);
-void StartGate(void);
-void EndGate(void);
+void StartGate(uint8_t index);
+void EndGate(uint8_t index);
+uint16_t DetermineDivisor(uint8_t keyIndex);
 
 #endif /* SCANNER_VOICEASSIGNER_H_ */

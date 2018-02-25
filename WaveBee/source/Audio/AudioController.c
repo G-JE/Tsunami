@@ -52,14 +52,19 @@ void Init_Buttons(void){
 }
 
 void BeginAudioController(void){
+	// pass audio data register to the DAC to continually publish new voltage at 16kHz
 	StartPlayback(&audioData);
 
-	// forever loop for handling all audio streams in an out
+	// forever loop for handling all audio streams in and out
 	while(1){
 
 		// when recording is triggered start a record session, overwriting previous sample
 		if(recording)
 			RecordingLength = StartRecording(&recording);
+		else{
+			// update audio data based on note information
+
+		}
 
 	}
 }

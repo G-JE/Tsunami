@@ -20,7 +20,6 @@ void BOARD_InitBootPeripherals(void)
 	Init_Dialog7212();
 	Init_Dac();
 	Init_Ftm();
-	Init_KeyboardMatrix();
 	Init_Buttons();
 	Init_MasterClock();
 }
