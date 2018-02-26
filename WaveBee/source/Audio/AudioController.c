@@ -10,6 +10,9 @@
 uint32_t RecordingLength = 0;
 bool recording = false;
 uint16_t audioData = 0;
+bool TriggerFlag[Voice_Num] = {0};
+uint32_t StreamIndex[Voice_Num] = {0};
+bool pulse = false;
 
 void RECORD_BUTTON_HANDLER(void){
 	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, (1U << RECORD_BUTTON_PIN));
@@ -52,6 +55,12 @@ void Init_Buttons(void){
 }
 
 void BeginAudioController(void){
+	BeginVoiceAssigner(TriggerFlag, &pulse);
+	Init_Buttons();
+	Init_Dialog7212();
+	Init_Dac();
+	Init_Ftm();
+//	uint32_t counting = 0;
 	// pass audio data register to the DAC to continually publish new voltage at 16kHz
 	StartPlayback(&audioData);
 
@@ -62,8 +71,26 @@ void BeginAudioController(void){
 		if(recording)
 			RecordingLength = StartRecording(&recording);
 		else{
+			if(pulse){
+				UpdateTriggers();
+				RefreshVoices();
+			}
+			uint16_t summedAudio = 0;
 			// update audio data based on note information
-
+			for(uint8_t i = 0; i < Voice_Num; i++){
+				if(TriggerFlag[i]){
+					summedAudio += GetAudioData(StreamIndex[i]);
+					StreamIndex[i]++;
+					TriggerFlag[i] = false;
+					if(StreamIndex[i] >= RecordingLength){
+						StreamIndex[i] = 0;
+					}
+				}
+				else{
+					StreamIndex[i] = 0;
+				}
+			}
+			audioData = summedAudio;
 		}
 
 	}

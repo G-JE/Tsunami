@@ -19,11 +19,14 @@
 
 #define Voice_Num 4u
 
-void BeginVoiceAssigner(void);
+void BeginVoiceAssigner(bool* flags, bool* p);
+void RefreshVoices(void);
+void UpdateTriggers(void);
 void Init_MasterClock(void);
 void CombineSounds(void);
 void StartGate(uint8_t index);
 void EndGate(uint8_t index);
 uint16_t DetermineDivisor(uint8_t keyIndex);
+uint16_t GetVoiceIndex(uint8_t i);
 
 #endif /* SCANNER_VOICEASSIGNER_H_ */

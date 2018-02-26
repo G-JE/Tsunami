@@ -22,6 +22,10 @@ uint16_t audioBuff[80000];
 uint32_t BufferLength = 0;
 bool* record;
 
+uint16_t GetAudioData(uint32_t index){
+	return audioBuff[index];
+}
+
 void Init_Dialog7212(void){
     sai_config_t config;
     uint32_t mclkSourceClockHz = 0U;

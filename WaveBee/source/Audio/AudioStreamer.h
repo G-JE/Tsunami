@@ -55,5 +55,6 @@ void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
 void Init_Dialog7212(void);
 uint32_t StartRecording(bool* recording);
 void Init_Buttons(void);
+uint16_t GetAudioData(uint32_t index);
 
 #endif /* AUDIOSTREAM_AUDIOSTREAMER_H_ */

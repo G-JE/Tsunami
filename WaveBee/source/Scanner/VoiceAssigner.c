@@ -8,18 +8,28 @@
 uint8_t ActiveKeys[Voice_Num] = {0};
 uint16_t ClockDivisor[Voice_Num] = {0};
 uint16_t Iterator[Voice_Num] = {0};
-bool TriggerStep[Voice_Num] = {0};
+bool* TriggerStep;
+bool* MasterPulse;
 // create different way for incrementing voices
 
 
-void BeginVoiceAssigner(void){
+void BeginVoiceAssigner(bool* flags, bool* p){
+	MasterPulse = p;
+	TriggerStep = flags;
 	Init_KeyboardMatrix(ActiveKeys);
 	Init_MasterClock();
 }
 
 void MasterFTM_Handler(void) {
 	FTM_ClearStatusFlags(MasterFTM, kFTM_TimeOverflowFlag);
+	*MasterPulse = true;
+}
 
+uint16_t GetVoiceIndex(uint8_t index){
+	return Iterator[index];
+}
+
+void UpdateTriggers(void){
 	// Trigger sequences of audio to move through data if keys are active
 	for(uint8_t i = 0; i < Voice_Num; i++){
 		if(ActiveKeys[i]){
@@ -30,6 +40,7 @@ void MasterFTM_Handler(void) {
 			}
 		}
 	}
+	*MasterPulse = false;
 }
 
 void Init_MasterClock(void){
@@ -48,6 +59,7 @@ void Init_MasterClock(void){
 
 void RefreshVoices(void){
 	UpdateActiveKeys();
+//	UpdateTriggers();
 }
 
 void StartGate(uint8_t index){
