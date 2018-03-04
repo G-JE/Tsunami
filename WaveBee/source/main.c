@@ -42,6 +42,7 @@
 #include "fsl_debug_console.h"
 #include "Audio\AudioController.h"
 #include "Scanner\VoiceAssigner.h"
+#include "Scanner\ControlState.h"
 
 #define SYNC_CLOCK_IRQ FTM0_IRQn
 #define SYNC_CLOCK FTM0
@@ -65,12 +66,20 @@ int main(void) {
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
     BeginVoiceAssigner();
-    uint8_t updateState = 0;
+    uint8_t updateState = NOT_RECORDING;
 
     forever {
     	updateState = GetControlState();
+
+    	// as the control inputs increase so will this switch statement for handling different functions
     	switch(updateState){
     	// update the state based on a change in the control board
+    	case RECORDING:
+    		// record audio from the microphone
+    		break;
+    	case NOT_RECORDING:
+    		// dont do anything
+    		break;
     	}
 
     	if(sync){

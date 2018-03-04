@@ -20,9 +20,6 @@ PORT_Type* ROW_PORTS[4] = { PORT_ROW1, PORT_ROW2, PORT_ROW3, PORT_ROW4 };
 GPIO_Type* ROW_GPIO[4] = { GPIO_ROW1, GPIO_ROW2, GPIO_ROW3, GPIO_ROW4 };
 uint8_t ROW_PINS[4] 	= { PIN_ROW1, PIN_ROW2, PIN_ROW3, PIN_ROW4 };
 
-uint32_t PreviousKeyState, CurrentKeyState;
-uint8_t* PressedKeys;
-
 void InitKeyboardMatrix(void){
 
 	// Initialize all rows as outputs and all columns as inputs

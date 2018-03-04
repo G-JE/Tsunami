@@ -7,6 +7,8 @@
 
 #include <Scanner/ControlState.h>
 
+bool recording = false;
+
 void InitButtons(void){
 	port_pin_config_t buttonConfig = {
 			/* Internal pull-up resistor is enabled */
@@ -29,4 +31,29 @@ void InitButtons(void){
 	PORT_SetPinInterruptConfig(RECORD_BUTTON_PORT, RECORD_BUTTON_PIN, kPORT_InterruptEitherEdge);
 	EnableIRQ(RECORD_BUTTON_IRQ);
 	GPIO_PinInit(RECORD_BUTTON_GPIO, RECORD_BUTTON_PIN, &inputConfig);
+}
+
+uint8_t GetControlState(void){
+	if(recording){
+		return RECORDING;
+	}
+	else
+		return NOT_RECORDING;
+}
+
+void RECORD_BUTTON_HANDLER(void){
+
+	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, (1U << RECORD_BUTTON_PIN));
+
+	//Trigger the recording to start and end based on rising or falling edge
+	if(!recording){
+		recording = true;
+		printf("recording\r\n");
+	}
+	else{
+		recording = false;
+		printf("stopped recording\r\n");
+	}
+	// this is needed for M4 ARM arch
+	__DSB();
 }

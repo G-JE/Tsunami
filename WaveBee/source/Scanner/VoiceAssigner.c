@@ -11,8 +11,17 @@ uint8_t Level1[48];
 uint8_t Level2[48];
 uint8_t Level3[48];
 uint8_t OctaveOffset[48];
+
+
+uint8_t Hold[VOICE_NUM];
+uint8_t Hop[VOICE_NUM];
+
 uint32_t PreviousKeyState = 0;
 uint8_t ActiveKeys[VOICE_NUM] = {0};
+
+// 0 is hold index, 1+ is to skip index by value
+uint8_t Shift[VOICE_NUM] = {0};
+uint16_t VoiceCounter[VOICE_NUM] = {0};
 
 void BeginVoiceAssigner(void){
 	InitKeyboardMatrix();
@@ -36,9 +45,15 @@ void BuildDynamicIndex(void){
 			}else{
 				indexFactor = 0;
 			}
-			Level1[i] = (int) (indexFactor);
-			Level2[i] = ((int)(indexFactor * 10)) % 10;
-			Level3[i] = ((int) (indexFactor * 100)) % 10;
+			if(indexFactor > 10){
+				Level1[i] = (int) (indexFactor);
+				Level2[i] = 1000 / ((int)(indexFactor * 10));
+				Level3[i] = 0;
+			}else{
+				Level1[i] = (int) (indexFactor);
+				Level2[i] = 100 / ((int)(indexFactor * 10));
+				Level3[i] = 1000 / ((int) (indexFactor * 100));
+			}
 		}
 		else	{
 			float scaler = powf((float) 2.0, (float)(12 + (i - 24))/12) / (float) 2.0;
@@ -49,23 +64,25 @@ void BuildDynamicIndex(void){
 			}else{
 				indexFactor = 0;
 			}
-			Level1[i] = (int) (indexFactor);
-			Level2[i] = ((int)(indexFactor * 10)) % 10;
-			Level3[i] = ((int) (indexFactor * 100)) % 10;
+			if(indexFactor > 10){
+				Level1[i] = (int) (indexFactor);
+				Level2[i] = 1000 / ((int)(indexFactor * 10));
+				Level3[i] = 0;
+			}else{
+				Level1[i] = (int) (indexFactor);
+				Level2[i] = 100 / ((int)(indexFactor * 10));
+				Level3[i] = 1000 / ((int) (indexFactor * 10));
+			}
 		}
 	}
 }
 
-uint8_t RefreshVoices(void){
-	return 1;
-}
-
-void StartVoice(void){
-
-}
-
-void EndVoice(uint8_t index){
-
+uint8_t* RefreshVoices(void){
+	for(uint8_t i = 0; i < VOICE_NUM; i++){
+		if(ActiveKeys[i])
+			Shift[i] = GetNewIndex(ActiveKeys[i]);
+	}
+	return Shift;
 }
 
 // check the keyboard matrix for new key events
@@ -82,7 +99,6 @@ void UpdateActiveKeys(void){
 				if(!(CurrentKeyState & (1 << (ActiveKeys[i]-1)))){
 					// end the audio stream
 					ActiveKeys[i] = 0;
-					EndVoice(i);
 				}
 			}
 			else{
@@ -95,7 +111,6 @@ void UpdateActiveKeys(void){
 							duplicate |= (ActiveKeys[k] == (j+1));
 						if(!duplicate){
 							ActiveKeys[i] = j + 1;
-							StartVoice();
 						}
 					}
 				}
@@ -103,4 +118,25 @@ void UpdateActiveKeys(void){
 		}
 	}
 	PreviousKeyState = CurrentKeyState;
+}
+
+
+uint8_t GetNewIndexes(uint8_t position){
+	uint8_t octaveOffset = OctaveOffset[32 - position];
+	uint8_t level1 = Level1[32 - position];
+	uint8_t level2 = Level2[32 - position];
+	uint8_t level3 = Level3[32 - position];
+
+	if(position > 16){
+		// is above the sampling rate and needs to skip values
+		// increment the skip register
+
+	}
+	else{
+		// is below the sampling rate and needs to hold values
+		// increment the hold register
+
+	}
+
+	//wrap the counter at 100 since that is the precision being used with 3 levels of precision
 }

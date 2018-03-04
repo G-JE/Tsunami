@@ -20,9 +20,8 @@
 
 void BeginVoiceAssigner(void);
 void BuildDynamicIndex(void);
-uint8_t UpdateVoices(void);
+uint8_t* UpdateVoices(void);
 void UpdateActiveKeys(void);
-void StartVoice(void);
-void EndVoice(uint8_t index);
+int GetNewIndex(uint8_t position);
 
 #endif /* SCANNER_VOICEASSIGNER_H_ */

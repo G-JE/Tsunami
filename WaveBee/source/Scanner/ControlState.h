@@ -17,6 +17,11 @@
 #define RECORD_BUTTON_HANDLER PORTA_IRQHandler
 #define RECORD_BUTTON_IRQ PORTA_IRQn
 
-void InitButtons(void);
+enum ControlState {
+		RECORDING,
+		NOT_RECORDING
+};
 
+void InitButtons(void);
+uint8_t GetControlState(void);
 #endif /* SCANNER_CONTROLSTATE_H_ */
