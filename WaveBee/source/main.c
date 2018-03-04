@@ -73,19 +73,20 @@ int main(void) {
 
     	// as the control inputs increase so will this switch statement for handling different functions
     	switch(updateState){
-    	// update the state based on a change in the control board
-    	case RECORDING:
-    		// record audio from the microphone
-    		break;
-    	case NOT_RECORDING:
-    		// dont do anything
-    		break;
+			// update the state based on a change in the control board
+			case RECORDING:
+				// record audio from the microphone
+				break;
+			case NOT_RECORDING:
+				// dont do anything
+				break;
     	}
 
     	if(sync){
     		// check to see if key states have changed
     		// increment all of the voice indexes
     		// update the dac
+
     	}
     }
 

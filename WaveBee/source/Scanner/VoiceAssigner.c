@@ -7,35 +7,32 @@
 #include "VoiceAssigner.h"
 // create different way for incrementing voices
 
-uint8_t Level1[48];
-uint8_t Level2[48];
-uint8_t Level3[48];
-uint8_t OctaveOffset[48];
-
+uint8_t Level1[OCTAVES * SEMITONES];
+uint8_t Level2[OCTAVES * SEMITONES];
+uint8_t OctaveOffset[OCTAVES * SEMITONES];
 
 uint8_t Hold[VOICE_NUM];
-uint8_t Hop[VOICE_NUM];
 
 uint32_t PreviousKeyState = 0;
 uint8_t ActiveKeys[VOICE_NUM] = {0};
 
 // 0 is hold index, 1+ is to skip index by value
 uint8_t Shift[VOICE_NUM] = {0};
-uint16_t VoiceCounter[VOICE_NUM] = {0};
+uint16_t VoiceCounter[VOICE_NUM] = {1};
 
 void BeginVoiceAssigner(void){
 	InitKeyboardMatrix();
-	BuildDynamicIndex();
+	BuildDynamicLUT();
 }
 
 // used to build out a lookup table that can used for generating the frequencies for four octaves
-void BuildDynamicIndex(void){
+void BuildDynamicLUT(void){
 	float newFreq = 0;
 	float octaveOffset = 0;
 	float indexFactor = 0.0;
-	for(uint8_t i = 0; i < 48; i++){
+	for(uint8_t i = 0; i < (OCTAVES * SEMITONES); i++){
 		// lower two octaves
-		if(i < 25)	{
+		if(i < ((OCTAVES * SEMITONES)/2 + 1))	{
 			float scaler = powf((float) 2.0, (float)(12 - (24 - i))/12) / (float) 2.0;
 			newFreq = BASE_FREQ * scaler;
 			octaveOffset = floorf((BASE_FREQ / newFreq) - (float) 1.0);
@@ -48,11 +45,9 @@ void BuildDynamicIndex(void){
 			if(indexFactor > 10){
 				Level1[i] = (int) (indexFactor);
 				Level2[i] = 1000 / ((int)(indexFactor * 10));
-				Level3[i] = 0;
 			}else{
 				Level1[i] = (int) (indexFactor);
 				Level2[i] = 100 / ((int)(indexFactor * 10));
-				Level3[i] = 1000 / ((int) (indexFactor * 100));
 			}
 		}
 		else	{
@@ -67,11 +62,9 @@ void BuildDynamicIndex(void){
 			if(indexFactor > 10){
 				Level1[i] = (int) (indexFactor);
 				Level2[i] = 1000 / ((int)(indexFactor * 10));
-				Level3[i] = 0;
 			}else{
 				Level1[i] = (int) (indexFactor);
 				Level2[i] = 100 / ((int)(indexFactor * 10));
-				Level3[i] = 1000 / ((int) (indexFactor * 10));
 			}
 		}
 	}
@@ -80,7 +73,7 @@ void BuildDynamicIndex(void){
 uint8_t* RefreshVoices(void){
 	for(uint8_t i = 0; i < VOICE_NUM; i++){
 		if(ActiveKeys[i])
-			Shift[i] = GetNewIndex(ActiveKeys[i]);
+			GetNewShiftValue(i);
 	}
 	return Shift;
 }
@@ -121,22 +114,56 @@ void UpdateActiveKeys(void){
 }
 
 
-uint8_t GetNewIndexes(uint8_t position){
-	uint8_t octaveOffset = OctaveOffset[32 - position];
-	uint8_t level1 = Level1[32 - position];
-	uint8_t level2 = Level2[32 - position];
-	uint8_t level3 = Level3[32 - position];
+void GetNewShiftValue(uint8_t index){
+	// the value of 42 is based on centering 16kHz at key position 16
+	uint8_t position = ActiveKeys[index];
 
-	if(position > 16){
-		// is above the sampling rate and needs to skip values
-		// increment the skip register
+	// use the lookup table to determine how to match the new frequency
+	uint8_t octaveOffset = OctaveOffset[42 - position];
+	uint8_t level1 = Level1[42 - position];
+	uint8_t level2 = Level2[42 - position];
+	uint8_t wrap = level1 * level2;
 
+	if(position < 16){
+		// is above the sampling rate is down sampled and needs to hold
+		// hold the shift register
+		if(Hold[i] == 0){
+			if(!(VoiceCounter[i] % level1)){
+				Shift[i] = 0;
+				if(!(VoiceCounter[i] % (level2 * level1)))
+					Shift[i]++;
+			}
+			else
+				Shift[i]++;
+
+			Hold[i] = octaveOffset;
+		}
+		else{
+			Hold[i]--;
+			Shift[i] = 0;
+		}
 	}
 	else{
-		// is below the sampling rate and needs to hold values
-		// increment the hold register
+		// is above the sampling rate and needs to skip values
+		// increment the shift register
+		Shift[i] += octaveOffset;
+		if(!(VoiceCounter[i] % level1)){
+			Shift[i]++;
+			if(!(VoiceCounter[i] % (level2 * level1)))
+				Shift[i]--;
+		}
+		else
+			Shift[i]++;
 
 	}
 
-	//wrap the counter at 100 since that is the precision being used with 3 levels of precision
+	VoiceCounter[i]++;
+
+	// wrap the counter register when it reaches a point of repeating the pattern
+	VoiceCounter[i] %= wrap;
+
+	// reset the counter back to start index 1
+	if(VoiceCounter[i] == 0)
+		Voicecounter[i] = 1;
+
 }

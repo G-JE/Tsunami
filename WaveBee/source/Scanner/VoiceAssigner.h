@@ -17,11 +17,13 @@
 #define LOG2(x) log10(x)/log10(2)
 #define VOICE_NUM 4u
 #define BASE_FREQ (float) 16000.0
+#define OCTAVES 4u
+#define SEMITONES 12U
 
 void BeginVoiceAssigner(void);
-void BuildDynamicIndex(void);
+void BuildDynamicLUT(void);
 uint8_t* UpdateVoices(void);
 void UpdateActiveKeys(void);
-int GetNewIndex(uint8_t position);
+void GetNewShiftValue(uint8_t index);
 
 #endif /* SCANNER_VOICEASSIGNER_H_ */
