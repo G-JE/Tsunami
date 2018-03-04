@@ -41,19 +41,60 @@
 #include "MK66F18.h"
 #include "fsl_debug_console.h"
 #include "Audio\AudioController.h"
+#include "Scanner\VoiceAssigner.h"
+
+#define SYNC_CLOCK_IRQ FTM0_IRQn
+#define SYNC_CLOCK FTM0
+#define SYNC_CLOCK_CALLBACK FTM0_IRQHandler
+#define SYNC_CLKSRC (CLOCK_GetFreq(kCLOCK_BusClk)/4)
+
+#define forever for(;;)
+
+bool sync = false;
+
+void InitFTM(void);
 
 int main(void) {
 
   	/* Init board hardware. */
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
-//    BOARD_InitBootPeripherals();
+    BOARD_InitBootPeripherals();
+    InitFTM();
 
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
+    BeginVoiceAssigner();
+    uint8_t updateState = 0;
 
-    // used to test some basic audio control functionality
-    BeginAudioController();
+    forever {
+    	updateState = GetControlState();
+    	switch(updateState){
+    	// update the state based on a change in the control board
+    	}
+
+    	if(sync){
+    		// check to see if key states have changed
+    		// increment all of the voice indexes
+    		// update the dac
+    	}
+    }
 
     return 0 ;
+}
+
+// everything is synchronized to this clock
+void InitFTM(void){
+	ftm_config_t ftmConfig;
+	FTM_GetDefaultConfig(&ftmConfig);
+	ftmConfig.prescale = kFTM_Prescale_Divide_4;
+	FTM_Init(SYNC_CLOCK, &ftmConfig);
+	FTM_SetTimerPeriod(SYNC_CLOCK, USEC_TO_COUNT(128u, SYNC_CLKSRC));
+	FTM_EnableInterrupts(SYNC_CLOCK, kFTM_TimeOverflowInterruptEnable);
+	EnableIRQ(SYNC_CLOCK_IRQ);
+}
+
+void SyncClockCallback(void){
+	FTM_ClearStatusFlags(DAC_TRIG, kFTM_TimeOverflowFlag);
+	sync = true;
 }

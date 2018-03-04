@@ -23,10 +23,9 @@ uint8_t ROW_PINS[4] 	= { PIN_ROW1, PIN_ROW2, PIN_ROW3, PIN_ROW4 };
 uint32_t PreviousKeyState, CurrentKeyState;
 uint8_t* PressedKeys;
 
-void Init_KeyboardMatrix(uint8_t* keyAssignments){
-	// Initialize all rows as outputs and all columns as inputs
+void InitKeyboardMatrix(void){
 
-	PressedKeys = keyAssignments;
+	// Initialize all rows as outputs and all columns as inputs
 	port_pin_config_t gpio_pin = { kPORT_PullDown,
 									/* Fast slew rate is configured */
 									kPORT_FastSlewRate,
@@ -86,47 +85,10 @@ uint32_t ScanKeys(void){
 		GPIO_PinWrite(COL_GPIO[i], COL_PINS[i], 0u);
 
 		// requires a slight delay to not have false triggers
-		uint16_t delay = ~0;
+		uint8_t delay = ~0;
 		while(delay--);
 	}
-
 	return keyData;
 }
 
-void UpdateActiveKeys(void){
-	CurrentKeyState = ScanKeys();
-	uint32_t ChangedKeyState = CurrentKeyState ^ PreviousKeyState;
 
-	// If there is a change in state update the active keys
-	if(ChangedKeyState){
-		// loop for opening or closing the gate for a particular key
-		for(uint8_t i = 0; i < Voice_Num; i++){
-			// if the key is active check if it is still active
-			if(PressedKeys[i]){
-				if(!(CurrentKeyState & (1 << (PressedKeys[i]-1)))){
-					// end the audio stream
-					EndGate(i);
-					PressedKeys[i] = 0;
-				}
-			}
-			else{
-				// check each key to see if it active
-				for(uint8_t j = 0; j < 32; j++){
-					// if the key has changed to active add it to the active keys and open gate
-					if((CurrentKeyState & (1 << j)) & (ChangedKeyState & (1 << j))){
-						bool duplicate = false;
-						for(uint8_t k = 0; k < Voice_Num; k++)
-							duplicate |= (PressedKeys[k] == (j+1));
-
-						if(!duplicate){
-							PressedKeys[i] = j + 1;
-							// calculate the clock divisor for the key and to begin audio stream
-							StartGate(i);
-						}
-					}
-				}
-			}
-		}
-	}
-	PreviousKeyState = CurrentKeyState;
-}

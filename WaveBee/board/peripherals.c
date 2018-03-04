@@ -17,7 +17,4 @@ product: Peripherals v1.0
  ******************************************************************************/
 void BOARD_InitBootPeripherals(void)
 {
-	Init_Dialog7212();
-	Init_Dac();
-	Init_Ftm();
 }

@@ -40,15 +40,10 @@
 #define I2C_RELEASE_SCL_PIN 10U
 #define I2C_RELEASE_BUS_COUNT 100U
 #define OVER_SAMPLE_RATE (384U)
-#define SAMPLE_RATE (kSAI_SampleRate16KHz)
+#define SAMPLE_RATE (kSAI_SampleRate8KHz)
 #define BUFFER_SIZE (512)
 #define BUFFER_NUM (4)
 
-#define RECORD_BUTTON_PIN 8u
-#define RECORD_BUTTON_PORT PORTA
-#define RECORD_BUTTON_GPIO GPIOA
-#define RECORD_BUTTON_HANDLER PORTA_IRQHandler
-#define RECORD_BUTTON_IRQ PORTA_IRQn
 
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);

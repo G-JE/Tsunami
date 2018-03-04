@@ -5,90 +5,102 @@
  *      Author: ericksong
  */
 #include "VoiceAssigner.h"
-uint8_t ActiveKeys[Voice_Num] = {0};
-uint16_t ClockDivisor[Voice_Num] = {0};
-uint16_t Iterator[Voice_Num] = {0};
-bool* TriggerStep;
-bool* MasterPulse;
 // create different way for incrementing voices
 
+uint8_t Level1[48];
+uint8_t Level2[48];
+uint8_t Level3[48];
+uint8_t OctaveOffset[48];
+uint32_t PreviousKeyState = 0;
+uint8_t ActiveKeys[VOICE_NUM] = {0};
 
-void BeginVoiceAssigner(bool* flags, bool* p){
-	MasterPulse = p;
-	TriggerStep = flags;
-	Init_KeyboardMatrix(ActiveKeys);
-	Init_MasterClock();
+void BeginVoiceAssigner(void){
+	InitKeyboardMatrix();
+	BuildDynamicIndex();
 }
 
-void MasterFTM_Handler(void) {
-	FTM_ClearStatusFlags(MasterFTM, kFTM_TimeOverflowFlag);
-	*MasterPulse = true;
+// used to build out a lookup table that can used for generating the frequencies for four octaves
+void BuildDynamicIndex(void){
+	float newFreq = 0;
+	float octaveOffset = 0;
+	float indexFactor = 0.0;
+	for(uint8_t i = 0; i < 48; i++){
+		// lower two octaves
+		if(i < 25)	{
+			float scaler = powf((float) 2.0, (float)(12 - (24 - i))/12) / (float) 2.0;
+			newFreq = BASE_FREQ * scaler;
+			octaveOffset = floorf((BASE_FREQ / newFreq) - (float) 1.0);
+			OctaveOffset[i] = octaveOffset;
+			if(((int) newFreq % 4000)){
+				indexFactor = powf(((BASE_FREQ / (octaveOffset + ((float) 1.0))) - newFreq)/(BASE_FREQ), (float) -1.0);
+			}else{
+				indexFactor = 0;
+			}
+			Level1[i] = (int) (indexFactor);
+			Level2[i] = ((int)(indexFactor * 10)) % 10;
+			Level3[i] = ((int) (indexFactor * 100)) % 10;
+		}
+		else	{
+			float scaler = powf((float) 2.0, (float)(12 + (i - 24))/12) / (float) 2.0;
+			newFreq = BASE_FREQ * scaler;
+			octaveOffset = floorf((newFreq / BASE_FREQ) - (float) 1.0);
+			if(((int) newFreq % 4000)){
+				indexFactor = powf((newFreq - (BASE_FREQ * (octaveOffset + ((float) 1.0))))/(BASE_FREQ), (float) -1.0);
+			}else{
+				indexFactor = 0;
+			}
+			Level1[i] = (int) (indexFactor);
+			Level2[i] = ((int)(indexFactor * 10)) % 10;
+			Level3[i] = ((int) (indexFactor * 100)) % 10;
+		}
+	}
 }
 
-uint16_t GetVoiceIndex(uint8_t index){
-	return Iterator[index];
+uint8_t RefreshVoices(void){
+	return 1;
 }
 
-void UpdateTriggers(void){
-	// Trigger sequences of audio to move through data if keys are active
-	for(uint8_t i = 0; i < Voice_Num; i++){
-		if(ActiveKeys[i]){
-			Iterator[i]++;
-			if(Iterator[i] == ClockDivisor[i]){
-				TriggerStep[i] = true;
-				Iterator[i] = 0;
+void StartVoice(void){
+
+}
+
+void EndVoice(uint8_t index){
+
+}
+
+// check the keyboard matrix for new key events
+void UpdateActiveKeys(void){
+	uint32_t CurrentKeyState = ScanKeys();
+	uint32_t ChangedKeyState = CurrentKeyState ^ PreviousKeyState;
+
+	// If there is a change in state update the active keys
+	if(ChangedKeyState){
+		// loop for opening or closing the gate for a particular key
+		for(uint8_t i = 0; i < VOICE_NUM; i++){
+			// if the key is active check if it is still active
+			if(ActiveKeys[i]){
+				if(!(CurrentKeyState & (1 << (ActiveKeys[i]-1)))){
+					// end the audio stream
+					ActiveKeys[i] = 0;
+					EndVoice(i);
+				}
+			}
+			else{
+				// check each key to see if it active
+				for(uint8_t j = 0; j < 32; j++){
+					// if the key has changed to active add it to the active keys and open gate
+					if((CurrentKeyState & (1 << j)) & (ChangedKeyState & (1 << j))){
+						bool duplicate = false;
+						for(uint8_t k = 0; k < VOICE_NUM; k++)
+							duplicate |= (ActiveKeys[k] == (j+1));
+						if(!duplicate){
+							ActiveKeys[i] = j + 1;
+							StartVoice();
+						}
+					}
+				}
 			}
 		}
 	}
-	*MasterPulse = false;
-}
-
-void Init_MasterClock(void){
-	ftm_config_t ftmConfig;
-
-	FTM_GetDefaultConfig(&ftmConfig);
-	ftmConfig.prescale = kFTM_Prescale_Divide_1;
-	FTM_Init(MasterFTM, &ftmConfig);
-
-	// tick number is based on a value to get 786000Hz as a master clock
-	FTM_SetTimerPeriod(MasterFTM, 76u);
-	FTM_EnableInterrupts(MasterFTM, kFTM_TimeOverflowInterruptEnable);
-	EnableIRQ(MasterFTM_IRQ);
-	FTM_StartTimer(MasterFTM, kFTM_SystemClock);
-}
-
-void RefreshVoices(void){
-	UpdateActiveKeys();
-//	UpdateTriggers();
-}
-
-void StartGate(uint8_t index){
-	// generate divisor for the master clock for each note
-	// this can be centered at the center key or be based on first key pressed after recording
-	ClockDivisor[index] = DetermineDivisor(ActiveKeys[index]);
-}
-
-uint16_t DetermineDivisor(uint8_t keyIndex){
-
-	// will replace the 32 with variable if the centering of keyboard is variable
-	uint8_t position = 32 - keyIndex;
-	uint8_t octaveDown = floor(position / 12);
-	position %= 12;
-
-	// Start in highest octave and work down 32 - 8 kHz
-	if(octaveDown == 0){
-		return 24 + (position * 2);
-	}
-	else if (octaveDown == 1){
-		return 48 + (position * 8);
-	}
-	//  if(octaveDown == 2) the lowest it can go
-	else{
-		return 96 + (position * 16);
-	}
-}
-
-void EndGate(uint8_t index){
-	// close out the clock divisor
-	ClockDivisor[index] = 0;
+	PreviousKeyState = CurrentKeyState;
 }

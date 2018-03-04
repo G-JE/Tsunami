@@ -8,25 +8,21 @@
 #ifndef SCANNER_VOICEASSIGNER_H_
 #define SCANNER_VOICEASSIGNER_H_
 
-#include "fsl_ftm.h"
+#include "fsl_pit.h"
 #include "fsl_debug_console.h"
 #include "KeyMatrix.h"
+#include "math.h"
+#include "Audio/AudioController.h"
 
-#define MasterFTM FTM2
-#define MasterFTM_IRQ FTM2_IRQn
-#define MasterFTM_Handler FTM2_IRQHandler
-#define CLK_SRC (CLOCK_GetFreq(kCLOCK_BusClk)/4)
+#define LOG2(x) log10(x)/log10(2)
+#define VOICE_NUM 4u
+#define BASE_FREQ (float) 16000.0
 
-#define Voice_Num 4u
-
-void BeginVoiceAssigner(bool* flags, bool* p);
-void RefreshVoices(void);
-void UpdateTriggers(void);
-void Init_MasterClock(void);
-void CombineSounds(void);
-void StartGate(uint8_t index);
-void EndGate(uint8_t index);
-uint16_t DetermineDivisor(uint8_t keyIndex);
-uint16_t GetVoiceIndex(uint8_t i);
+void BeginVoiceAssigner(void);
+void BuildDynamicIndex(void);
+uint8_t UpdateVoices(void);
+void UpdateActiveKeys(void);
+void StartVoice(void);
+void EndVoice(uint8_t index);
 
 #endif /* SCANNER_VOICEASSIGNER_H_ */

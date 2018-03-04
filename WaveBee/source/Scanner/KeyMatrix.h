@@ -55,14 +55,10 @@
 #define PORT_COL7	PORTB
 #define PORT_COL8	PORTD
 
-// number of voices to be checked for
-#define Voice_Num 4u
 
 
-void Init_KeyboardMatrix(uint8_t* keyAssignments);
+
+void InitKeyboardMatrix(void);
 uint32_t ScanKeys(void);
-void UpdateActiveKeys(void);
-void StartGate(uint8_t index);
-void EndGate(uint8_t index);
 
 #endif /* SCANNER_KEYMATRIX_H_ */
