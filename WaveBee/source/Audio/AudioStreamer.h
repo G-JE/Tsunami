@@ -48,7 +48,8 @@
 void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void txCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData);
 void Init_Dialog7212(void);
-uint32_t StartRecording(bool* recording);
+uint32_t StartRecording(void);
+void EndRecording(void);
 void Init_Buttons(void);
 uint16_t GetAudioData(uint32_t index);
 

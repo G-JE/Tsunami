@@ -11,16 +11,16 @@ uint8_t Level1[OCTAVES * SEMITONES];
 uint8_t Level2[OCTAVES * SEMITONES];
 uint8_t OctaveOffset[OCTAVES * SEMITONES];
 
-uint8_t Hold[VOICE_NUM];
-
 uint32_t PreviousKeyState = 0;
-uint8_t ActiveKeys[VOICE_NUM] = {0};
+uint8_t VoiceNumber = 0;
+Voice Voices[4];
 
 // 0 is hold index, 1+ is to skip index by value
-uint8_t Shift[VOICE_NUM] = {0};
-uint16_t VoiceCounter[VOICE_NUM] = {1};
+uint16_t* VoiceCounter;
 
-void BeginVoiceAssigner(void){
+void BeginVoiceAssigner(uint8_t voiceNumber){
+	VoiceCounter = malloc(voiceNumber * sizeof (uint16_t));
+	VoiceNumber = voiceNumber;
 	InitKeyboardMatrix();
 	BuildDynamicLUT();
 }
@@ -70,12 +70,16 @@ void BuildDynamicLUT(void){
 	}
 }
 
-uint8_t* RefreshVoices(void){
-	for(uint8_t i = 0; i < VOICE_NUM; i++){
-		if(ActiveKeys[i])
+Voice* RefreshVoices(void){
+	// scan the matrix and update all of the keys
+	UpdateActiveKeys();
+
+	// find the new shift values for each key based on its position
+	for(uint8_t i = 0; i < VoiceNumber; i++){
+		if(Voices[i].isActive)
 			GetNewShiftValue(i);
 	}
-	return Shift;
+	return Voices;
 }
 
 // check the keyboard matrix for new key events
@@ -86,12 +90,12 @@ void UpdateActiveKeys(void){
 	// If there is a change in state update the active keys
 	if(ChangedKeyState){
 		// loop for opening or closing the gate for a particular key
-		for(uint8_t i = 0; i < VOICE_NUM; i++){
+		for(uint8_t i = 0; i < VoiceNumber; i++){
 			// if the key is active check if it is still active
-			if(ActiveKeys[i]){
-				if(!(CurrentKeyState & (1 << (ActiveKeys[i]-1)))){
+			if(Voices[i].isActive){
+				if(!(CurrentKeyState & (1 << (Voices[i].position-1)))){
 					// end the audio stream
-					ActiveKeys[i] = 0;
+					Voices[i].isActive = false;
 				}
 			}
 			else{
@@ -100,10 +104,12 @@ void UpdateActiveKeys(void){
 					// if the key has changed to active add it to the active keys and open gate
 					if((CurrentKeyState & (1 << j)) & (ChangedKeyState & (1 << j))){
 						bool duplicate = false;
-						for(uint8_t k = 0; k < VOICE_NUM; k++)
-							duplicate |= (ActiveKeys[k] == (j+1));
+						for(uint8_t k = 0; k < VoiceNumber; k++)
+							duplicate |= (Voices[k].position == (j+1));
+
 						if(!duplicate){
-							ActiveKeys[i] = j + 1;
+							Voices[i].position = j + 1;
+							Voices[i].isActive = true;
 						}
 					}
 				}
@@ -116,7 +122,7 @@ void UpdateActiveKeys(void){
 
 void GetNewShiftValue(uint8_t index){
 	// the value of 42 is based on centering 16kHz at key position 16
-	uint8_t position = ActiveKeys[index];
+	uint8_t position = Voices[index].position;
 
 	// use the lookup table to determine how to match the new frequency
 	uint8_t octaveOffset = OctaveOffset[42 - position];
@@ -127,43 +133,42 @@ void GetNewShiftValue(uint8_t index){
 	if(position < 16){
 		// is above the sampling rate is down sampled and needs to hold
 		// hold the shift register
-		if(Hold[i] == 0){
-			if(!(VoiceCounter[i] % level1)){
-				Shift[i] = 0;
-				if(!(VoiceCounter[i] % (level2 * level1)))
-					Shift[i]++;
+		if(Voices[index].holding == 0){
+			if(!(VoiceCounter[index] % level1)){
+				Voices[index].shiftValue = 0;
+				if(!(VoiceCounter[index] % (level2 * level1)))
+					Voices[index].shiftValue++;
 			}
 			else
-				Shift[i]++;
+				Voices[index].shiftValue++;
 
-			Hold[i] = octaveOffset;
+			Voices[index].holding = octaveOffset;
 		}
 		else{
-			Hold[i]--;
-			Shift[i] = 0;
+			Voices[index].holding--;
+			Voices[index].shiftValue = 0;
 		}
 	}
 	else{
 		// is above the sampling rate and needs to skip values
 		// increment the shift register
-		Shift[i] += octaveOffset;
-		if(!(VoiceCounter[i] % level1)){
-			Shift[i]++;
-			if(!(VoiceCounter[i] % (level2 * level1)))
-				Shift[i]--;
+		Voices[index].shiftValue += octaveOffset;
+		if(!(VoiceCounter[index] % level1)){
+			Voices[index].shiftValue++;
+			if(!(VoiceCounter[index] % (level2 * level1)))
+				Voices[index].shiftValue--;
 		}
 		else
-			Shift[i]++;
-
+			Voices[index].shiftValue++;
 	}
 
-	VoiceCounter[i]++;
+	Voices[index].counter++;
 
 	// wrap the counter register when it reaches a point of repeating the pattern
-	VoiceCounter[i] %= wrap;
+	Voices[index].counter %= wrap;
 
 	// reset the counter back to start index 1
-	if(VoiceCounter[i] == 0)
-		Voicecounter[i] = 1;
+	if(Voices[index].counter == 0)
+		Voices[index].counter = 1;
 
 }

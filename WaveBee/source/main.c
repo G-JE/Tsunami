@@ -43,6 +43,8 @@
 #include "Audio\AudioController.h"
 #include "Scanner\VoiceAssigner.h"
 #include "Scanner\ControlState.h"
+#include "DataStructures\Structures.h"
+
 
 #define SYNC_CLOCK_IRQ FTM0_IRQn
 #define SYNC_CLOCK FTM0
@@ -52,6 +54,8 @@
 #define forever for(;;)
 
 bool sync = false;
+Voice* voices;
+uint32_t RecordLength = 0;
 
 void InitFTM(void);
 
@@ -62,31 +66,53 @@ int main(void) {
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
     InitFTM();
+    InitButtons();
+    BeginAudioController();
 
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
-    BeginVoiceAssigner();
-    uint8_t updateState = NOT_RECORDING;
 
+    StateInstance state = GetControlState();
+    uint32_t VoiceIndexes[state.voiceNumber];
+    memset(VoiceIndexes, 0, state.voiceNumber);
+    BeginVoiceAssigner(state.voiceNumber);
+	uint16_t summedAudio;
     forever {
-    	updateState = GetControlState();
+    	// check to see if there are any changes to the control state
+    	state = GetControlState();
 
     	// as the control inputs increase so will this switch statement for handling different functions
-    	switch(updateState){
+    	switch(state.state){
 			// update the state based on a change in the control board
 			case RECORDING:
 				// record audio from the microphone
+				RecordLength = StartRecording();
 				break;
 			case NOT_RECORDING:
 				// dont do anything
 				break;
     	}
 
+    	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
     	if(sync){
     		// check to see if key states have changed
     		// increment all of the voice indexes
     		// update the dac
-
+    		voices = RefreshVoices();
+    		summedAudio = 0;
+    		for(uint8_t i = 0; i < state.voiceNumber; i++){
+    			if(voices[i].isActive){
+    				if(VoiceIndexes[i] > RecordLength)
+    					VoiceIndexes[i] = 0;
+    				VoiceIndexes[i] += voices[i].shiftValue;
+    				voices[i].shiftValue = 0;
+    				printf("%d\n", voices[i].shiftValue);
+    				summedAudio += GetAudioData(VoiceIndexes[i]);
+    			}
+    			else
+    				VoiceIndexes[i] = 0;
+    		}
+    		UpdateDac(summedAudio >> 4);
     	}
     }
 
@@ -99,12 +125,13 @@ void InitFTM(void){
 	FTM_GetDefaultConfig(&ftmConfig);
 	ftmConfig.prescale = kFTM_Prescale_Divide_4;
 	FTM_Init(SYNC_CLOCK, &ftmConfig);
-	FTM_SetTimerPeriod(SYNC_CLOCK, USEC_TO_COUNT(128u, SYNC_CLKSRC));
+	FTM_SetTimerPeriod(SYNC_CLOCK, USEC_TO_COUNT(63u, SYNC_CLKSRC));
 	FTM_EnableInterrupts(SYNC_CLOCK, kFTM_TimeOverflowInterruptEnable);
 	EnableIRQ(SYNC_CLOCK_IRQ);
+	FTM_StartTimer(SYNC_CLOCK, kFTM_SystemClock);
 }
 
-void SyncClockCallback(void){
+void SYNC_CLOCK_CALLBACK(void){
 	FTM_ClearStatusFlags(DAC_TRIG, kFTM_TimeOverflowFlag);
 	sync = true;
 }

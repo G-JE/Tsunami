@@ -7,7 +7,14 @@
 
 #include <Scanner/ControlState.h>
 
-bool recording = false;
+
+StateInstance State = {
+		0,
+		0,
+		4
+};
+
+bool record = false;
 
 void InitButtons(void){
 	port_pin_config_t buttonConfig = {
@@ -33,12 +40,15 @@ void InitButtons(void){
 	GPIO_PinInit(RECORD_BUTTON_GPIO, RECORD_BUTTON_PIN, &inputConfig);
 }
 
-uint8_t GetControlState(void){
-	if(recording){
-		return RECORDING;
+StateInstance GetControlState(void){
+	return State;
+}
+
+void UpdateControlState(uint8_t param, uint8_t value){
+	// function for updating the control state
+	if(param == RECORD){
+		State.state = RECORDING;
 	}
-	else
-		return NOT_RECORDING;
 }
 
 void RECORD_BUTTON_HANDLER(void){
@@ -46,12 +56,15 @@ void RECORD_BUTTON_HANDLER(void){
 	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, (1U << RECORD_BUTTON_PIN));
 
 	//Trigger the recording to start and end based on rising or falling edge
-	if(!recording){
-		recording = true;
+	if(!record){
+		record = true;
+		State.state = RECORDING;
 		printf("recording\r\n");
 	}
 	else{
-		recording = false;
+		record = false;
+		State.state = NOT_RECORDING;
+		EndRecording();
 		printf("stopped recording\r\n");
 	}
 	// this is needed for M4 ARM arch

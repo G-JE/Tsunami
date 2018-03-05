@@ -20,7 +20,7 @@ volatile uint32_t receiveCount = 0;
 i2c_master_handle_t i2cHandle = {{0, 0, kI2C_Write, 0, 0, NULL, 0}, 0, 0, NULL, NULL};
 uint16_t audioBuff[80000];
 uint32_t BufferLength = 0;
-bool* record;
+bool recording = false;
 
 uint16_t GetAudioData(uint32_t index){
 	return audioBuff[index];
@@ -112,8 +112,14 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
 {
     sai_transfer_t xfer = {0};
     receiveCount++;
-
-    if (!*record || (BufferLength > 75000))
+    if(recording && !(BufferLength > 75000))
+    {
+		xfer.data = (uint8_t *) audioBuff + ((receiveCount) * BUFFER_SIZE * 2);
+		xfer.dataSize = BUFFER_SIZE * 2;
+		SAI_TransferReceiveEDMA(base, handle, &xfer);
+		BufferLength += BUFFER_SIZE;
+    }
+    else
     {
         isrxFinished = true;
         SAI_TransferTerminateReceiveEDMA(base, handle);
@@ -122,20 +128,17 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
         // need to look further into this, there is a 6 packet offset
         BufferLength += 3072;
     }
-    else
-    {
-		xfer.data = (uint8_t *) audioBuff + ((receiveCount) * BUFFER_SIZE * 2);
-		xfer.dataSize = BUFFER_SIZE * 2;
-		SAI_TransferReceiveEDMA(base, handle, &xfer);
-		BufferLength += BUFFER_SIZE;
-    }
 }
 
-uint32_t StartRecording(bool* r){
+void EndRecording(void){
+	recording = false;
+}
+
+uint32_t StartRecording(){
 
 	// get handle on the variable to indicate if system is still recording
-	record = r;
 	sai_transfer_t xfer = {0};
+	recording = true;
 
 	/* First clear the buffer */
 	memset(audioBuff, 0, sizeof audioBuff);

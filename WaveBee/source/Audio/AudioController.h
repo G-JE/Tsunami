@@ -20,6 +20,6 @@
 #define RECORD_BUTTON_IRQ PORTA_IRQn
 
 void Init_Buttons(void);
-void BeginAudioController(bool* synchronize);
+void BeginAudioController(void);
 
 #endif /* AUDIO_AUDIOCONTROLLER_H_ */
