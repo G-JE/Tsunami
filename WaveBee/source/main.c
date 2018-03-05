@@ -106,7 +106,6 @@ int main(void) {
     					VoiceIndexes[i] = 0;
     				VoiceIndexes[i] += voices[i].shiftValue;
     				voices[i].shiftValue = 0;
-    				printf("%d\n", voices[i].shiftValue);
     				summedAudio += GetAudioData(VoiceIndexes[i]);
     			}
     			else

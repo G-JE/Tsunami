@@ -54,6 +54,7 @@ void BuildDynamicLUT(void){
 			float scaler = powf((float) 2.0, (float)(12 + (i - 24))/12) / (float) 2.0;
 			newFreq = BASE_FREQ * scaler;
 			octaveOffset = floorf((newFreq / BASE_FREQ) - (float) 1.0);
+			OctaveOffset[i] = octaveOffset;
 			if(((int) newFreq % 4000)){
 				indexFactor = powf((newFreq - (BASE_FREQ * (octaveOffset + ((float) 1.0))))/(BASE_FREQ), (float) -1.0);
 			}else{
@@ -134,9 +135,9 @@ void GetNewShiftValue(uint8_t index){
 		// is above the sampling rate is down sampled and needs to hold
 		// hold the shift register
 		if(Voices[index].holding == 0){
-			if(!(VoiceCounter[index] % level1)){
+			if(!(Voices[index].counter % level1)){
 				Voices[index].shiftValue = 0;
-				if(!(VoiceCounter[index] % (level2 * level1)))
+				if(!(Voices[index].counter % (level2 * level1)))
 					Voices[index].shiftValue++;
 			}
 			else
@@ -153,9 +154,9 @@ void GetNewShiftValue(uint8_t index){
 		// is above the sampling rate and needs to skip values
 		// increment the shift register
 		Voices[index].shiftValue += octaveOffset;
-		if(!(VoiceCounter[index] % level1)){
+		if(!(Voices[index].counter % level1)){
 			Voices[index].shiftValue++;
-			if(!(VoiceCounter[index] % (level2 * level1)))
+			if(!(Voices[index].counter % (level2 * level1)))
 				Voices[index].shiftValue--;
 		}
 		else
@@ -165,7 +166,7 @@ void GetNewShiftValue(uint8_t index){
 	Voices[index].counter++;
 
 	// wrap the counter register when it reaches a point of repeating the pattern
-	Voices[index].counter %= wrap;
+	Voices[index].counter %= wrap + 1;
 
 	// reset the counter back to start index 1
 	if(Voices[index].counter == 0)

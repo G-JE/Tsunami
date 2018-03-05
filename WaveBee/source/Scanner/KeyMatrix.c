@@ -82,7 +82,7 @@ uint32_t ScanKeys(void){
 		GPIO_PinWrite(COL_GPIO[i], COL_PINS[i], 0u);
 
 		// requires a slight delay to not have false triggers
-		uint8_t delay = 10;
+		uint8_t delay = 50;
 		while(delay--);
 	}
 	return keyData;
