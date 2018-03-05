@@ -15,11 +15,8 @@ uint32_t PreviousKeyState = 0;
 uint8_t VoiceNumber = 0;
 Voice Voices[4];
 
-// 0 is hold index, 1+ is to skip index by value
-uint16_t* VoiceCounter;
 
 void BeginVoiceAssigner(uint8_t voiceNumber){
-	VoiceCounter = malloc(voiceNumber * sizeof (uint16_t));
 	VoiceNumber = voiceNumber;
 	InitKeyboardMatrix();
 	BuildDynamicLUT();
@@ -96,7 +93,8 @@ void UpdateActiveKeys(void){
 			if(Voices[i].isActive){
 				if(!(CurrentKeyState & (1 << (Voices[i].position-1)))){
 					// end the audio stream
-					Voices[i].isActive = false;
+					memset(&Voices[i], 0, sizeof Voices[i]);
+
 				}
 			}
 			else{
@@ -110,6 +108,7 @@ void UpdateActiveKeys(void){
 
 						if(!duplicate){
 							Voices[i].position = j + 1;
+							Voices[i].counter = 1;
 							Voices[i].isActive = true;
 						}
 					}
@@ -126,22 +125,22 @@ void GetNewShiftValue(uint8_t index){
 	uint8_t position = Voices[index].position;
 
 	// use the lookup table to determine how to match the new frequency
-	uint8_t octaveOffset = OctaveOffset[42 - position];
-	uint8_t level1 = Level1[42 - position];
-	uint8_t level2 = Level2[42 - position];
+	uint8_t octaveOffset = OctaveOffset[8 + position];
+	uint8_t level1 = Level1[8 + position];
+	uint8_t level2 = Level2[8 + position];
 	uint8_t wrap = level1 * level2;
 
 	if(position < 16){
 		// is above the sampling rate is down sampled and needs to hold
 		// hold the shift register
 		if(Voices[index].holding == 0){
+			Voices[index].shiftValue++;
+
 			if(!(Voices[index].counter % level1)){
 				Voices[index].shiftValue = 0;
 				if(!(Voices[index].counter % (level2 * level1)))
 					Voices[index].shiftValue++;
 			}
-			else
-				Voices[index].shiftValue++;
 
 			Voices[index].holding = octaveOffset;
 		}
@@ -159,8 +158,7 @@ void GetNewShiftValue(uint8_t index){
 			if(!(Voices[index].counter % (level2 * level1)))
 				Voices[index].shiftValue--;
 		}
-		else
-			Voices[index].shiftValue++;
+		Voices[index].shiftValue++;
 	}
 
 	Voices[index].counter++;

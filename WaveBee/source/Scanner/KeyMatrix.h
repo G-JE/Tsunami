@@ -35,7 +35,7 @@
 #define PIN_COL5	0U
 #define PIN_COL6	11U
 #define PIN_COL7	10U
-#define PIN_COL8	0U
+#define PIN_COL8	1U
 
 #define GPIO_COL1	GPIOD
 #define GPIO_COL2	GPIOD
@@ -44,7 +44,7 @@
 #define GPIO_COL5	GPIOC
 #define GPIO_COL6	GPIOB
 #define GPIO_COL7	GPIOB
-#define GPIO_COL8	GPIOD
+#define GPIO_COL8	GPIOA
 
 #define PORT_COL1	PORTD
 #define PORT_COL2	PORTD
@@ -53,7 +53,7 @@
 #define PORT_COL5	PORTC
 #define PORT_COL6	PORTB
 #define PORT_COL7	PORTB
-#define PORT_COL8	PORTD
+#define PORT_COL8	PORTA
 
 
 
