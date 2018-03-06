@@ -14,7 +14,7 @@ struct {
 	uint8_t shiftValue;
 	uint8_t position;
 	float hopHoldValue;
-	float decimalSum;
+	float carryOver;
 	uint8_t holding;
 } typedef Voice;
 

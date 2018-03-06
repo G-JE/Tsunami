@@ -7,9 +7,6 @@
 #include "VoiceAssigner.h"
 // create different way for incrementing voices
 
-//uint8_t Level1[OCTAVES * SEMITONES];
-//uint8_t Level2[OCTAVES * SEMITONES];
-//uint8_t OctaveOffset[OCTAVES * SEMITONES];
 float FrequencyCoefficients[OCTAVES * SEMITONES];
 uint32_t PreviousKeyState = 0;
 uint8_t VoiceNumber = 0;
@@ -31,28 +28,15 @@ void BuildDynamicLUT(void){
 			float scaler = powf((float) 2.0, (float)(12 - (24 - i))/12) / (float) 2.0;
 			newFreq = BASE_FREQ * scaler;
 			FrequencyCoefficients[i] = ((BASE_FREQ) - newFreq)/(newFreq);
-//			if(indexFactor > 10){
-//				Level1[i] = (int) (indexFactor);
-//				Level2[i] = 1000 / ((int)(indexFactor * 10));
-//			}else{
-//				Level1[i] = (int) (indexFactor);
-//				Level2[i] = 100 / ((int)(indexFactor * 10));
-//			}
 		}
+		// upper two octaves
 		else{
 			float scaler = powf((float) 2.0, (float)(12 + (i - 24))/12) / (float) 2.0;
 			newFreq = BASE_FREQ * scaler;
 			FrequencyCoefficients[i] = (newFreq - (BASE_FREQ))/(BASE_FREQ);
-//			if(indexFactor > 10){
-//				Level1[i] = (int) (indexFactor);
-//				Level2[i] = 1000 / ((int)(indexFactor * 10));
-//			}else{
-//				Level1[i] = (int) (indexFactor);
-//				Level2[i] = 100 / ((int)(indexFactor * 10));
-//			}
 		}
-		// set center frequency to 0 since that tries to divide by zero. . .
 	}
+		// set center frequency to 0 since that tries to divide by zero. . .
 		FrequencyCoefficients[OCTAVES*SEMITONES/2] = 0;
 }
 
@@ -110,22 +94,22 @@ void GetNewShiftValue(uint8_t i){
 
 	// center position is key 16
 	if(position < 16){
-		if(Voices[i].decimalSum > 1){
-			Voices[i].holding += (int) Voices[i].decimalSum;
-			Voices[i].decimalSum -= floor(Voices[i].decimalSum);
+		if(Voices[i].carryOver > 1){
+			Voices[i].holding += (int) Voices[i].carryOver;
+			Voices[i].carryOver -= floor(Voices[i].carryOver);
 		}
 		if(Voices[i].holding){
 			Voices[i].holding--;
 		}
 		else{
 			Voices[i].shiftValue++;
-			Voices[i].decimalSum += Voices[i].hopHoldValue;
+			Voices[i].carryOver += Voices[i].hopHoldValue;
 		}
 	}
 	else{
-		Voices[i].decimalSum += Voices[i].hopHoldValue;
-		Voices[i].shiftValue += (int) Voices[i].decimalSum;
-		Voices[i].decimalSum -= (float) Voices[i].shiftValue;
+		Voices[i].carryOver += Voices[i].hopHoldValue;
+		Voices[i].shiftValue += (int) Voices[i].carryOver;
+		Voices[i].carryOver -= (float) Voices[i].shiftValue;
 		Voices[i].shiftValue++;
 
 	}
