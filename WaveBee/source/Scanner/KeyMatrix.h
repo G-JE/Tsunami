@@ -56,8 +56,6 @@
 #define PORT_COL8	PORTA
 
 
-
-
 void InitKeyboardMatrix(void);
 uint32_t ScanKeys(void);
 

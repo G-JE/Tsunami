@@ -49,13 +49,15 @@
 #define SYNC_CLOCK_IRQ FTM0_IRQn
 #define SYNC_CLOCK FTM0
 #define SYNC_CLOCK_CALLBACK FTM0_IRQHandler
-#define SYNC_CLKSRC (CLOCK_GetFreq(kCLOCK_BusClk)/4)
+#define SYNC_CLKSRC (CLOCK_GetFreq(kCLOCK_BusClk))
 
 #define forever for(;;)
 
 bool sync = false;
 Voice* voices;
 uint32_t RecordLength = 0;
+uint32_t playbackLength = 0;
+uint16_t summedAudio = 0;
 
 void InitFTM(void);
 
@@ -65,18 +67,23 @@ int main(void) {
     BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
+  	/* Init FSL debug console. */
+    BOARD_InitDebugConsole();
+
     InitFTM();
     InitButtons();
     BeginAudioController();
 
-  	/* Init FSL debug console. */
-    BOARD_InitDebugConsole();
 
     StateInstance state = GetControlState();
     uint32_t VoiceIndexes[state.voiceNumber];
-    memset(VoiceIndexes, 0, state.voiceNumber);
+    uint16_t scanDelay = 0;
+
+    memset(VoiceIndexes, 100, state.voiceNumber);
     BeginVoiceAssigner(state.voiceNumber);
-	uint16_t summedAudio;
+
+	FTM_StartTimer(SYNC_CLOCK, kFTM_SystemClock);
+
     forever {
     	// check to see if there are any changes to the control state
     	state = GetControlState();
@@ -92,6 +99,9 @@ int main(void) {
 				// dont do anything
 				break;
     	}
+    	if(!scanDelay){
+    		UpdateActiveKeys();
+    	}
 
     	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
     	if(sync){
@@ -102,16 +112,22 @@ int main(void) {
     		summedAudio = 0;
     		for(uint8_t i = 0; i < state.voiceNumber; i++){
     			if(voices[i].isActive){
-    				if(VoiceIndexes[i] > RecordLength)
-    					VoiceIndexes[i] = 0;
+    				if(VoiceIndexes[i] > RecordLength){
+    					// trim out start to avoid a clap
+    					VoiceIndexes[i] = 100;
+    				}
     				VoiceIndexes[i] += voices[i].shiftValue;
     				voices[i].shiftValue = 0;
     				summedAudio += GetAudioData(VoiceIndexes[i]);
     			}
     			else
-    				VoiceIndexes[i] = 0;
+    				VoiceIndexes[i] = 100;
     		}
-    		UpdateDac(summedAudio >> 4);
+    	sync = false;
+    	UpdateDac(summedAudio >> 4);
+    	// update the key matrix every 100ms
+		scanDelay++;
+		scanDelay %= 1600;
     	}
     }
 
@@ -122,12 +138,11 @@ int main(void) {
 void InitFTM(void){
 	ftm_config_t ftmConfig;
 	FTM_GetDefaultConfig(&ftmConfig);
-	ftmConfig.prescale = kFTM_Prescale_Divide_4;
+	ftmConfig.prescale = kFTM_Prescale_Divide_1;
 	FTM_Init(SYNC_CLOCK, &ftmConfig);
-	FTM_SetTimerPeriod(SYNC_CLOCK, USEC_TO_COUNT(63u, SYNC_CLKSRC));
+	FTM_SetTimerPeriod(SYNC_CLOCK, USEC_TO_COUNT(62u, SYNC_CLKSRC));
 	FTM_EnableInterrupts(SYNC_CLOCK, kFTM_TimeOverflowInterruptEnable);
 	EnableIRQ(SYNC_CLOCK_IRQ);
-	FTM_StartTimer(SYNC_CLOCK, kFTM_SystemClock);
 }
 
 void SYNC_CLOCK_CALLBACK(void){

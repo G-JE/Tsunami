@@ -13,8 +13,9 @@ struct {
 	bool isActive;
 	uint8_t shiftValue;
 	uint8_t position;
+	float hopHoldValue;
+	float decimalSum;
 	uint8_t holding;
-	uint16_t counter;
 } typedef Voice;
 
 struct {

@@ -7,10 +7,10 @@
 #include "VoiceAssigner.h"
 // create different way for incrementing voices
 
-uint8_t Level1[OCTAVES * SEMITONES];
-uint8_t Level2[OCTAVES * SEMITONES];
-uint8_t OctaveOffset[OCTAVES * SEMITONES];
-
+//uint8_t Level1[OCTAVES * SEMITONES];
+//uint8_t Level2[OCTAVES * SEMITONES];
+//uint8_t OctaveOffset[OCTAVES * SEMITONES];
+float FrequencyCoefficients[OCTAVES * SEMITONES];
 uint32_t PreviousKeyState = 0;
 uint8_t VoiceNumber = 0;
 Voice Voices[4];
@@ -25,53 +25,38 @@ void BeginVoiceAssigner(uint8_t voiceNumber){
 // used to build out a lookup table that can used for generating the frequencies for four octaves
 void BuildDynamicLUT(void){
 	float newFreq = 0;
-	float octaveOffset = 0;
-	float indexFactor = 0.0;
 	for(uint8_t i = 0; i < (OCTAVES * SEMITONES); i++){
 		// lower two octaves
 		if(i < ((OCTAVES * SEMITONES)/2 + 1))	{
 			float scaler = powf((float) 2.0, (float)(12 - (24 - i))/12) / (float) 2.0;
 			newFreq = BASE_FREQ * scaler;
-			octaveOffset = floorf((BASE_FREQ / newFreq) - (float) 1.0);
-			OctaveOffset[i] = octaveOffset;
-			if(((int) newFreq % 4000)){
-				indexFactor = powf(((BASE_FREQ / (octaveOffset + ((float) 1.0))) - newFreq)/(BASE_FREQ), (float) -1.0);
-			}else{
-				indexFactor = 0;
-			}
-			if(indexFactor > 10){
-				Level1[i] = (int) (indexFactor);
-				Level2[i] = 1000 / ((int)(indexFactor * 10));
-			}else{
-				Level1[i] = (int) (indexFactor);
-				Level2[i] = 100 / ((int)(indexFactor * 10));
-			}
+			FrequencyCoefficients[i] = ((BASE_FREQ) - newFreq)/(newFreq);
+//			if(indexFactor > 10){
+//				Level1[i] = (int) (indexFactor);
+//				Level2[i] = 1000 / ((int)(indexFactor * 10));
+//			}else{
+//				Level1[i] = (int) (indexFactor);
+//				Level2[i] = 100 / ((int)(indexFactor * 10));
+//			}
 		}
-		else	{
+		else{
 			float scaler = powf((float) 2.0, (float)(12 + (i - 24))/12) / (float) 2.0;
 			newFreq = BASE_FREQ * scaler;
-			octaveOffset = floorf((newFreq / BASE_FREQ) - (float) 1.0);
-			OctaveOffset[i] = octaveOffset;
-			if(((int) newFreq % 4000)){
-				indexFactor = powf((newFreq - (BASE_FREQ * (octaveOffset + ((float) 1.0))))/(BASE_FREQ), (float) -1.0);
-			}else{
-				indexFactor = 0;
-			}
-			if(indexFactor > 10){
-				Level1[i] = (int) (indexFactor);
-				Level2[i] = 1000 / ((int)(indexFactor * 10));
-			}else{
-				Level1[i] = (int) (indexFactor);
-				Level2[i] = 100 / ((int)(indexFactor * 10));
-			}
+			FrequencyCoefficients[i] = (newFreq - (BASE_FREQ))/(BASE_FREQ);
+//			if(indexFactor > 10){
+//				Level1[i] = (int) (indexFactor);
+//				Level2[i] = 1000 / ((int)(indexFactor * 10));
+//			}else{
+//				Level1[i] = (int) (indexFactor);
+//				Level2[i] = 100 / ((int)(indexFactor * 10));
+//			}
 		}
+		// set center frequency to 0 since that tries to divide by zero. . .
 	}
+		FrequencyCoefficients[OCTAVES*SEMITONES/2] = 0;
 }
 
 Voice* RefreshVoices(void){
-	// scan the matrix and update all of the keys
-	UpdateActiveKeys();
-
 	// find the new shift values for each key based on its position
 	for(uint8_t i = 0; i < VoiceNumber; i++){
 		if(Voices[i].isActive)
@@ -94,7 +79,6 @@ void UpdateActiveKeys(void){
 				if(!(CurrentKeyState & (1 << (Voices[i].position-1)))){
 					// end the audio stream
 					memset(&Voices[i], 0, sizeof Voices[i]);
-
 				}
 			}
 			else{
@@ -108,8 +92,8 @@ void UpdateActiveKeys(void){
 
 						if(!duplicate){
 							Voices[i].position = j + 1;
-							Voices[i].counter = 1;
 							Voices[i].isActive = true;
+							Voices[i].hopHoldValue = FrequencyCoefficients[8 + j + 1];
 						}
 					}
 				}
@@ -120,54 +104,30 @@ void UpdateActiveKeys(void){
 }
 
 
-void GetNewShiftValue(uint8_t index){
+void GetNewShiftValue(uint8_t i){
 	// the value of 42 is based on centering 16kHz at key position 16
-	uint8_t position = Voices[index].position;
+	uint8_t position = Voices[i].position;
 
-	// use the lookup table to determine how to match the new frequency
-	uint8_t octaveOffset = OctaveOffset[8 + position];
-	uint8_t level1 = Level1[8 + position];
-	uint8_t level2 = Level2[8 + position];
-	uint8_t wrap = level1 * level2;
-
+	// center position is key 16
 	if(position < 16){
-		// is above the sampling rate is down sampled and needs to hold
-		// hold the shift register
-		if(Voices[index].holding == 0){
-			Voices[index].shiftValue++;
-
-			if(!(Voices[index].counter % level1)){
-				Voices[index].shiftValue = 0;
-				if(!(Voices[index].counter % (level2 * level1)))
-					Voices[index].shiftValue++;
-			}
-
-			Voices[index].holding = octaveOffset;
+		if(Voices[i].decimalSum > 1){
+			Voices[i].holding += (int) Voices[i].decimalSum;
+			Voices[i].decimalSum -= floor(Voices[i].decimalSum);
+		}
+		if(Voices[i].holding){
+			Voices[i].holding--;
 		}
 		else{
-			Voices[index].holding--;
-			Voices[index].shiftValue = 0;
+			Voices[i].shiftValue++;
+			Voices[i].decimalSum += Voices[i].hopHoldValue;
 		}
 	}
 	else{
-		// is above the sampling rate and needs to skip values
-		// increment the shift register
-		Voices[index].shiftValue += octaveOffset;
-		if(!(Voices[index].counter % level1)){
-			Voices[index].shiftValue++;
-			if(!(Voices[index].counter % (level2 * level1)))
-				Voices[index].shiftValue--;
-		}
-		Voices[index].shiftValue++;
+		Voices[i].decimalSum += Voices[i].hopHoldValue;
+		Voices[i].shiftValue += (int) Voices[i].decimalSum;
+		Voices[i].decimalSum -= (float) Voices[i].shiftValue;
+		Voices[i].shiftValue++;
+
 	}
-
-	Voices[index].counter++;
-
-	// wrap the counter register when it reaches a point of repeating the pattern
-	Voices[index].counter %= wrap + 1;
-
-	// reset the counter back to start index 1
-	if(Voices[index].counter == 0)
-		Voices[index].counter = 1;
-
 }
+
