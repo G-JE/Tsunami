@@ -126,7 +126,10 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
         receiveCount = 0;
 
         // need to look further into this, there is a 6 packet offset
-        BufferLength -= 3472;
+        BufferLength -= 3073;
+
+        // cut off tail end of sample on account of the closing of button
+        BufferLength -= 1000;
     }
 }
 

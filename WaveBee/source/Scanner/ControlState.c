@@ -23,7 +23,7 @@ void InitButtons(void){
 			/* Fast slew rate is configured */
 			kPORT_FastSlewRate,
 			/* Passive filter is disabled */
-			kPORT_PassiveFilterDisable,
+			kPORT_PassiveFilterEnable,
 			/* Open drain is disabled */
 			kPORT_OpenDrainDisable,
 			/* Low drive strength is configured */
@@ -64,8 +64,8 @@ void RECORD_BUTTON_HANDLER(void){
 	else{
 		record = false;
 		State.state = NOT_RECORDING;
+		printf("not recording\r\n");
 		EndRecording();
-		printf("stopped recording\r\n");
 	}
 	// this is needed for M4 ARM arch
 	__DSB();

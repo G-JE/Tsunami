@@ -10,11 +10,16 @@
 float FrequencyCoefficients[OCTAVES * SEMITONES];
 uint32_t PreviousKeyState = 0;
 uint8_t VoiceNumber = 0;
-Voice Voices[4];
+Voice* Voices;
 
 
 void BeginVoiceAssigner(uint8_t voiceNumber){
 	VoiceNumber = voiceNumber;
+
+	// dynamically allocate memory for the Voices
+	Voices = malloc(VoiceNumber * sizeof *Voices);
+	memset(Voices, 0, sizeof *Voices * voiceNumber);
+
 	InitKeyboardMatrix();
 	BuildDynamicLUT();
 }
@@ -43,7 +48,7 @@ void BuildDynamicLUT(void){
 Voice* RefreshVoices(void){
 	// find the new shift values for each key based on its position
 	for(uint8_t i = 0; i < VoiceNumber; i++){
-		if(Voices[i].isActive)
+		if(Voices[i].gate || Voices[i].isClosing)
 			GetNewShiftValue(i);
 	}
 	return Voices;
@@ -59,10 +64,11 @@ void UpdateActiveKeys(void){
 		// loop for opening or closing the gate for a particular key
 		for(uint8_t i = 0; i < VoiceNumber; i++){
 			// if the key is active check if it is still active
-			if(Voices[i].isActive){
+			if(Voices[i].gate && !Voices[i].isClosing){
 				if(!(CurrentKeyState & (1 << (Voices[i].position-1)))){
 					// end the audio stream
 					memset(&Voices[i], 0, sizeof Voices[i]);
+					Voices[i].isClosing = true;
 				}
 			}
 			else{
@@ -76,8 +82,9 @@ void UpdateActiveKeys(void){
 
 						if(!duplicate){
 							Voices[i].position = j + 1;
-							Voices[i].isActive = true;
+							Voices[i].gate = true;
 							Voices[i].hopHoldValue = FrequencyCoefficients[8 + j + 1];
+							Voices[i].closing = 0;
 						}
 					}
 				}
@@ -111,7 +118,6 @@ void GetNewShiftValue(uint8_t i){
 		Voices[i].shiftValue += (int) Voices[i].carryOver;
 		Voices[i].carryOver -= (float) Voices[i].shiftValue;
 		Voices[i].shiftValue++;
-
 	}
 }
 

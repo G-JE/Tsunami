@@ -50,6 +50,7 @@
 #define SYNC_CLOCK FTM0
 #define SYNC_CLOCK_CALLBACK FTM0_IRQHandler
 #define SYNC_CLKSRC (CLOCK_GetFreq(kCLOCK_BusClk))
+#define RAMP_SIZE 500u
 
 #define forever for(;;)
 
@@ -58,6 +59,7 @@ Voice* voices;
 uint32_t RecordLength = 0;
 uint32_t playbackLength = 0;
 uint16_t summedAudio = 0;
+float Ramp[RAMP_SIZE];
 
 void InitFTM(void);
 
@@ -74,15 +76,18 @@ int main(void) {
     InitButtons();
     BeginAudioController();
 
-
     StateInstance state = GetControlState();
     uint32_t VoiceIndexes[state.voiceNumber];
-    uint16_t scanDelay = 0;
-
+    memset(VoiceIndexes, 0, state.voiceNumber);
     memset(VoiceIndexes, 100, state.voiceNumber);
     BeginVoiceAssigner(state.voiceNumber);
 
 	FTM_StartTimer(SYNC_CLOCK, kFTM_SystemClock);
+
+	// generate lookup table for ramp
+	for(uint16_t i = 0; i < RAMP_SIZE; i++)
+		Ramp[i] = (float) (1.0 + (float) i) / (float) RAMP_SIZE;
+    uint16_t scanDelay = 0;
 
     forever {
     	// check to see if there are any changes to the control state
@@ -96,7 +101,7 @@ int main(void) {
 				RecordLength = StartRecording();
 				break;
 			case NOT_RECORDING:
-				// dont do anything
+				// don't do anything
 				break;
     	}
     	if(!scanDelay){
@@ -111,23 +116,44 @@ int main(void) {
     		voices = RefreshVoices();
     		summedAudio = 0;
     		for(uint8_t i = 0; i < state.voiceNumber; i++){
-    			if(voices[i].isActive){
-    				if(VoiceIndexes[i] > RecordLength){
-    					// trim out start to avoid a clap
-    					VoiceIndexes[i] = 100;
-    				}
+    			if(voices[i].gate){
     				VoiceIndexes[i] += voices[i].shiftValue;
-    				voices[i].shiftValue = 0;
-    				summedAudio += GetAudioData(VoiceIndexes[i]);
+    				if(VoiceIndexes[i] < RAMP_SIZE)
+    					summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[VoiceIndexes[i]];
+
+    				else if(VoiceIndexes[i] > RecordLength - RAMP_SIZE){
+        				voices[i].closing += voices[i].shiftValue;
+    					if(voices[i].closing == RAMP_SIZE){
+    						voices[i].isClosing = false;
+    						voices[i].gate = false;
+    						voices[i].position = 0;
+    					}
+    					else if(voices[i].closing < RAMP_SIZE)
+    						summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
+    				}
+    				else
+    					summedAudio += GetAudioData(VoiceIndexes[i]);
+
     			}
+				else if(voices[i].isClosing && !voices[i].gate){
+					voices[i].closing += voices[i].shiftValue;
+					if(voices[i].closing == RAMP_SIZE){
+						voices[i].isClosing = false;
+						voices[i].position = 0;
+					}
+					else if(voices[i].closing < RAMP_SIZE)
+						summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
+				}
     			else
     				VoiceIndexes[i] = 100;
+
+    			voices[i].shiftValue = 0;
     		}
-    	sync = false;
-    	UpdateDac(summedAudio >> 4);
-    	// update the key matrix every 100ms
-		scanDelay++;
-		scanDelay %= 1600;
+			UpdateDac(summedAudio >> 4);
+			// update the key matrix every 100ms
+			scanDelay++;
+			scanDelay %= 1600;
+			sync = false;
     	}
     }
 
