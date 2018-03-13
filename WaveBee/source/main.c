@@ -100,9 +100,10 @@ int main(void) {
 				// record audio from the microphone
 				RecordLength = StartRecording();
 				break;
-			case NOT_RECORDING:
+			case NOP:
 				// don't do anything
 				break;
+				// add cases for handling the encoder states
     	}
     	if(!scanDelay){
     		UpdateActiveKeys();
