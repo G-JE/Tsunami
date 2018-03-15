@@ -17,8 +17,18 @@ StateInstance State = {
 bool record = false;
 bool  A_HIGH = false;
 bool  B_HIGH = false;
+adc16_channel_config_t adc16ChannelConfig;
 
 void InitControls(void){
+	adc16_config_t adc16Config;
+
+	ADC16_GetDefaultConfig(&adc16Config);
+	ADC16_Init(ADC_BASE, &adc16Config);
+
+	adc16ChannelConfig.channelNumber = POSITION_SLIDER_CHANNEL;
+	adc16ChannelConfig.enableInterruptOnConversionCompleted = false;
+
+	ADC16_SetChannelConfig(ADC_BASE, POSITION_SLIDER_GROUP, &adc16ChannelConfig);
 	port_pin_config_t buttonConfig = {
 			/* Internal pull-up resistor is enabled */
 			kPORT_PullUp,
@@ -66,6 +76,7 @@ void InitControls(void){
 	GPIO_PinInit(ENCODER_GPIOA,ENCODER_PINA, &inputConfig);
     GPIO_PinInit(ENCODER_GPIOB,ENCODER_PINB, &inputConfig);
 }
+
 StateInstance GetControlState(void){
 	return State;
 }
@@ -77,7 +88,10 @@ void UpdateControlState(uint8_t param, uint8_t value){
 	}
 }
 
-
+void UpdateADCValues(void){
+	ADC16_SetChannelConfig(ADC_BASE, POSITION_SLIDER_GROUP, &adc16ChannelConfig);
+	printf("ADC Value: %d\r\n", ADC16_GetChannelConversionValue(ADC_BASE, POSITION_SLIDER_GROUP));
+}
 
 void RECORD_HANDLER(void){
 

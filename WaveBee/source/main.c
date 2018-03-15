@@ -105,8 +105,10 @@ int main(void) {
 				break;
 				// add cases for handling the encoder states
     	}
+
     	if(!scanDelay){
     		UpdateActiveKeys();
+    		UpdateADCValues();
     	}
 
     	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
@@ -151,7 +153,8 @@ int main(void) {
     			voices[i].shiftValue = 0;
     		}
 			UpdateDac(summedAudio >> 4);
-			// update the key matrix every 100ms
+
+			// update the key matrix every 10ms
 			scanDelay++;
 			scanDelay %= 160;
 			sync = false;
@@ -167,7 +170,8 @@ void InitFTM(void){
 	FTM_GetDefaultConfig(&ftmConfig);
 	ftmConfig.prescale = kFTM_Prescale_Divide_1;
 	FTM_Init(SYNC_CLOCK, &ftmConfig);
-	FTM_SetTimerPeriod(SYNC_CLOCK, USEC_TO_COUNT(62u, SYNC_CLKSRC));
+	uint32_t tickCount = (uint64_t)((uint64_t) 625 * CLOCK_GetFreq(kCLOCK_BusClk) / 10000000U);
+	FTM_SetTimerPeriod(SYNC_CLOCK,  tickCount);
 	FTM_EnableInterrupts(SYNC_CLOCK, kFTM_TimeOverflowInterruptEnable);
 	EnableIRQ(SYNC_CLOCK_IRQ);
 }
