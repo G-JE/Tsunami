@@ -13,24 +13,45 @@
 #include "DataStructures/Structures.h"
 #include "Audio/AudioStreamer.h"
 #include "fsl_debug_console.h"
+#include "fsl_adc16.h"
 
 #define RECORD_BUTTON_PIN 8u
 #define RECORD_BUTTON_PORT PORTA
 #define RECORD_BUTTON_GPIO GPIOA
-#define RECORD_BUTTON_HANDLER PORTA_IRQHandler
-#define RECORD_BUTTON_IRQ PORTA_IRQn
 
+#define ENCODER_PINA 1u
+#define ENCODER_PORTA PORTD
+#define ENCODER_GPIOA GPIOD
+
+#define ENCODER_PINB 3u
+#define ENCODER_PORTB PORTD
+#define ENCODER_GPIOB GPIOD
+
+#define RECORD_HANDLER PORTA_IRQHandler
+#define RECORD_IRQ PORTA_IRQn
+#define ENCODER_HANDLER PORTD_IRQHandler
+#define ENCODER_IRQ PORTD_IRQn
+
+#define POSITION_SLIDER_CHANNEL 13u
+#define POSITION_SLIDER_GROUP 0u
+#define ADC_BASE ADC1
+
+#define RECORD_MASK  (1u << RECORD_BUTTON_PIN)
+#define ENCODER_MASK (1u << ENCODER_PINA) | (1u << ENCODER_PINB)
 enum ControlState {
-		NOT_RECORDING,
+		NOP,
 		RECORDING,
+		ENCODER_CW,
+		ENCODER_CCW
 };
 
 enum States {
 	RECORD
 };
 
-void InitButtons(void);
+void InitControls(void);
 StateInstance GetControlState(void);
 void UpdateControlState(uint8_t param, uint8_t value);
+void UpdateADCValues(void);
 
 #endif /* SCANNER_CONTROLSTATE_H_ */
