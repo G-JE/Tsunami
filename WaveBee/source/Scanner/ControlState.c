@@ -35,7 +35,7 @@ void InitControls(void){
 			/* Pin Control Register fields [15:0] are not locked */
 			kPORT_UnlockRegister
 	};
-	port_pin_config_t EncoderConfig = {
+	port_pin_config_t encoderConfig = {
 		/* Internal pull-up resistor is enabled */
 		kPORT_PullUp,
 		/* Fast slew rate is configured */
@@ -55,14 +55,14 @@ void InitControls(void){
 
 	PORT_SetPinConfig(RECORD_BUTTON_PORT, RECORD_BUTTON_PIN, &buttonConfig);
 	PORT_SetPinInterruptConfig(RECORD_BUTTON_PORT, RECORD_BUTTON_PIN, kPORT_InterruptEitherEdge);
-	EnableIRQ(RECORD_BUTTON_IRQ);
 	GPIO_PinInit(RECORD_BUTTON_GPIO, RECORD_BUTTON_PIN, &inputConfig);
 
-	PORT_SetPinConfig(ENCODER_PORT,ENOCDER_PINA,&encoderConfig);
-	PORT_SetPinConfig(ENCODER_PORT,ENOCDER_PINB,&encoderConfig);
-	PORT_SetPinInterrupCongfig(ENCODER_PORT,ENCODER_PINA,kPORT_InterruptFallingEdge);
-	PORT_SetPinInterrupCongfig(ENCODER_PORT,ENCODER_PINA,kPORT_InterruptFallingEdge);
-	EnableIRQ(CONTROL_IRQ);
+	PORT_SetPinConfig(ENCODER_PORTA, ENCODER_PINA, &encoderConfig);
+	PORT_SetPinConfig(ENCODER_PORTB, ENCODER_PINB, &encoderConfig);
+	PORT_SetPinInterruptConfig(ENCODER_PORTA, ENCODER_PINA, kPORT_InterruptFallingEdge);
+	PORT_SetPinInterruptConfig(ENCODER_PORTB, ENCODER_PINB, kPORT_InterruptFallingEdge);
+	EnableIRQ(RECORD_IRQ);
+	EnableIRQ(ENCODER_IRQ);
 	GPIO_PinInit(ENCODER_GPIOA,ENCODER_PINA, &inputConfig);
     GPIO_PinInit(ENCODER_GPIOB,ENCODER_PINB, &inputConfig);
 }
@@ -77,10 +77,12 @@ void UpdateControlState(uint8_t param, uint8_t value){
 	}
 }
 
-void CONTROL_HANDLER(void){
 
-	uint32_t flags = GPIO_GetInterruptFlags(ENCODER_GPIOA);
-	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, CONTROL_MASKA);
+
+void RECORD_HANDLER(void){
+
+	uint32_t flags = GPIO_PortGetInterruptFlags(RECORD_BUTTON_GPIO);
+	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, RECORD_MASK);
 
 	//Trigger the recording to start and end based on rising or falling edge
 	if(flags & (1u << RECORD_BUTTON_PIN)){
@@ -97,7 +99,16 @@ void CONTROL_HANDLER(void){
 		}
 	}
 
-	if(flags & (1u << ENCODER_PINA))
+	// this is needed for M4 ARM arch
+	__DSB();
+}
+
+void ENCODER_HANDLER(void){
+
+	uint32_t flags = GPIO_PortGetInterruptFlags(ENCODER_GPIOA);
+	GPIO_PortClearInterruptFlags(ENCODER_GPIOA, ENCODER_MASK);
+
+  	if(flags & (1u << ENCODER_PINA))
 		B_HIGH = GPIO_PinRead(ENCODER_GPIOA, ENCODER_PINB);
 
 	if(flags & (1u << ENCODER_PINB))
@@ -114,6 +125,4 @@ void CONTROL_HANDLER(void){
 		B_HIGH = false;
 		printf("turning clockwise\r\n");
 	}
-	// this is needed for M4 ARM arch
-	__DSB();
 }

@@ -73,7 +73,7 @@ int main(void) {
     BOARD_InitDebugConsole();
 
     InitFTM();
-    InitButtons();
+    InitControls();
     BeginAudioController();
 
     StateInstance state = GetControlState();
@@ -153,7 +153,7 @@ int main(void) {
 			UpdateDac(summedAudio >> 4);
 			// update the key matrix every 100ms
 			scanDelay++;
-			scanDelay %= 1600;
+			scanDelay %= 160;
 			sync = false;
     	}
     }

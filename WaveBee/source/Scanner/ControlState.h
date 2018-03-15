@@ -26,11 +26,14 @@
 #define ENCODER_PORTB PORTD
 #define ENCODER_GPIOB GPIOD
 
-#define CONTROL_HANDLER PORTA_IRQHandler
-#define CONTROL_IRQ PORTA_IRQn
 
-#define CONTROL_MASKA (1u << ENCODER_PINA) || (1u << ENCODER_PINB) || (1u << RECORD_BUTTON_PIN)
+#define RECORD_HANDLER PORTA_IRQHandler
+#define RECORD_IRQ PORTA_IRQn
+#define ENCODER_HANDLER PORTD_IRQHandler
+#define ENCODER_IRQ PORTD_IRQn
 
+#define RECORD_MASK  (1u << RECORD_BUTTON_PIN)
+#define ENCODER_MASK (1u << ENCODER_PINA) | (1u << ENCODER_PINB)
 enum ControlState {
 		NOP,
 		RECORDING,
@@ -42,7 +45,7 @@ enum States {
 	RECORD
 };
 
-Void InitControls(void);
+void InitControls(void);
 StateInstance GetControlState(void);
 void UpdateControlState(uint8_t param, uint8_t value);
 
