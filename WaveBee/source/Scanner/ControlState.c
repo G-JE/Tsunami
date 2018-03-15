@@ -90,7 +90,7 @@ void UpdateControlState(uint8_t param, uint8_t value){
 
 void UpdateADCValues(void){
 	ADC16_SetChannelConfig(ADC_BASE, POSITION_SLIDER_GROUP, &adc16ChannelConfig);
-	printf("ADC Value: %d\r\n", ADC16_GetChannelConversionValue(ADC_BASE, POSITION_SLIDER_GROUP));
+	uint32_t value = ADC16_GetChannelConversionValue(ADC_BASE, POSITION_SLIDER_GROUP);
 }
 
 void RECORD_HANDLER(void){

@@ -170,6 +170,8 @@ void InitFTM(void){
 	FTM_GetDefaultConfig(&ftmConfig);
 	ftmConfig.prescale = kFTM_Prescale_Divide_1;
 	FTM_Init(SYNC_CLOCK, &ftmConfig);
+
+	// use this method for increasing the accuracy of the tick value to set the timer period
 	uint32_t tickCount = (uint64_t)((uint64_t) 625 * CLOCK_GetFreq(kCLOCK_BusClk) / 10000000U);
 	FTM_SetTimerPeriod(SYNC_CLOCK,  tickCount);
 	FTM_EnableInterrupts(SYNC_CLOCK, kFTM_TimeOverflowInterruptEnable);
