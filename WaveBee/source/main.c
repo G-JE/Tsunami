@@ -66,7 +66,7 @@ void InitFTM(void);
 int main(void) {
 
   	/* Init board hardware. */
-    BOARD_InitBootPins();
+	BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
   	/* Init FSL debug console. */
@@ -88,7 +88,6 @@ int main(void) {
 	for(uint16_t i = 0; i < RAMP_SIZE; i++)
 		Ramp[i] = (float) (1.0 + (float) i) / (float) RAMP_SIZE;
     uint16_t scanDelay = 0;
-
     forever {
     	// check to see if there are any changes to the control state
     	state = GetControlState();
@@ -108,7 +107,7 @@ int main(void) {
 
     	if(!scanDelay){
     		UpdateActiveKeys();
-    		UpdateADCValues();
+    		UpdateADCValues(1);
     	}
 
     	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
@@ -148,7 +147,7 @@ int main(void) {
 						summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
 				}
     			else
-    				VoiceIndexes[i] = 100;
+    				VoiceIndexes[i] = 250;
 
     			voices[i].shiftValue = 0;
     		}

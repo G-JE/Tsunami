@@ -129,7 +129,7 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
         BufferLength -= 3073;
 
         // cut off tail end of sample on account of the closing of button
-        BufferLength -= 1000;
+        BufferLength -= 1200;
     }
 }
 

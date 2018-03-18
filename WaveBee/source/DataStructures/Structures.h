@@ -35,6 +35,12 @@ struct {
 	bool isClosing;
 } typedef Voice;
 
+struct {
+	uint16_t* audioData;
+	uint32_t sampleLength;
+	uint32_t startIndex;
+	uint32_t endIndex;
+} typedef Sample;
 
 struct {
 	uint8_t mode;

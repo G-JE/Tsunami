@@ -17,18 +17,37 @@ StateInstance State = {
 bool record = false;
 bool  A_HIGH = false;
 bool  B_HIGH = false;
+bool encoderOpen = false;
 adc16_channel_config_t adc16ChannelConfig;
 
 void InitControls(void){
 	adc16_config_t adc16Config;
 
+	// initialize all of the ADC pins
 	ADC16_GetDefaultConfig(&adc16Config);
-	ADC16_Init(ADC_BASE, &adc16Config);
+	ADC16_Init(ADC_BASE1, &adc16Config);
+	ADC16_Init(ADC_BASE0, &adc16Config);
 
 	adc16ChannelConfig.channelNumber = POSITION_SLIDER_CHANNEL;
 	adc16ChannelConfig.enableInterruptOnConversionCompleted = false;
 
-	ADC16_SetChannelConfig(ADC_BASE, POSITION_SLIDER_GROUP, &adc16ChannelConfig);
+	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	adc16ChannelConfig.channelNumber = LENGTH_SLIDER_CHANNEL;
+	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	adc16ChannelConfig.channelNumber = ATTACK_SLIDER_CHANNEL;
+	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	adc16ChannelConfig.channelNumber = DECAY_SLIDER_CHANNEL;
+	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	adc16ChannelConfig.channelNumber = SUSTAIN_SLIDER_CHANNEL;
+	ADC16_SetChannelConfig(ADC_BASE0, SLIDER_GROUP, &adc16ChannelConfig);
+
+	adc16ChannelConfig.channelNumber = RELEASE_SLIDER_CHANNEL;
+	ADC16_SetChannelConfig(ADC_BASE0, SLIDER_GROUP, &adc16ChannelConfig);
+
 	port_pin_config_t buttonConfig = {
 			/* Internal pull-up resistor is enabled */
 			kPORT_PullUp,
@@ -69,10 +88,11 @@ void InitControls(void){
 
 	PORT_SetPinConfig(ENCODER_PORTA, ENCODER_PINA, &encoderConfig);
 	PORT_SetPinConfig(ENCODER_PORTB, ENCODER_PINB, &encoderConfig);
-	PORT_SetPinInterruptConfig(ENCODER_PORTA, ENCODER_PINA, kPORT_InterruptFallingEdge);
-	PORT_SetPinInterruptConfig(ENCODER_PORTB, ENCODER_PINB, kPORT_InterruptFallingEdge);
+	PORT_SetPinInterruptConfig(ENCODER_PORTA, ENCODER_PINA, kPORT_InterruptRisingEdge);
+	PORT_SetPinInterruptConfig(ENCODER_PORTB, ENCODER_PINB, kPORT_InterruptRisingEdge);
 	EnableIRQ(RECORD_IRQ);
 	EnableIRQ(ENCODER_IRQ);
+	EnableIRQ(ENCODER_IRQ2);
 	GPIO_PinInit(ENCODER_GPIOA,ENCODER_PINA, &inputConfig);
     GPIO_PinInit(ENCODER_GPIOB,ENCODER_PINB, &inputConfig);
 }
@@ -88,31 +108,35 @@ void UpdateControlState(uint8_t param, uint8_t value){
 	}
 }
 
-void UpdateADCValues(void){
-	ADC16_SetChannelConfig(ADC_BASE, POSITION_SLIDER_GROUP, &adc16ChannelConfig);
-	uint32_t value = ADC16_GetChannelConversionValue(ADC_BASE, POSITION_SLIDER_GROUP);
+// expand this for reading ADC values from all sliders
+void UpdateADCValues(uint8_t channel){
+
+	adc16ChannelConfig.channelNumber = channel;
+
+	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	// do something with this value to update parameters
+	uint32_t value = ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP);
 }
 
 void RECORD_HANDLER(void){
 
 	uint32_t flags = GPIO_PortGetInterruptFlags(RECORD_BUTTON_GPIO);
 	GPIO_PortClearInterruptFlags(RECORD_BUTTON_GPIO, RECORD_MASK);
-
-	//Trigger the recording to start and end based on rising or falling edge
-	if(flags & (1u << RECORD_BUTTON_PIN)){
-		if(!record){
-			record = true;
-			State.state = RECORDING;
-			printf("recording\r\n");
+		//Trigger the recording to start and end based on rising or falling edge
+		if(flags & (1u << RECORD_BUTTON_PIN)){
+			if(!record){
+				record = true;
+				State.state = RECORDING;
+				printf("recording\r\n");
+			}
+			else{
+				record = false;
+				State.state = NOP;
+				printf("not recording\r\n");
+				EndRecording();
+			}
 		}
-		else{
-			record = false;
-			State.state = NOP;
-			printf("not recording\r\n");
-			EndRecording();
-		}
-	}
-
 	// this is needed for M4 ARM arch
 	__DSB();
 }
@@ -120,23 +144,29 @@ void RECORD_HANDLER(void){
 void ENCODER_HANDLER(void){
 
 	uint32_t flags = GPIO_PortGetInterruptFlags(ENCODER_GPIOA);
-	GPIO_PortClearInterruptFlags(ENCODER_GPIOA, ENCODER_MASK);
+	GPIO_PortClearInterruptFlags(ENCODER_GPIOA,  (1u << ENCODER_PINA));
+	if(flags & (1u << ENCODER_PINA))
+		B_HIGH = GPIO_PinRead(ENCODER_GPIOB, ENCODER_PINB);
 
-  	if(flags & (1u << ENCODER_PINA))
-		B_HIGH = GPIO_PinRead(ENCODER_GPIOA, ENCODER_PINB);
+	if(!B_HIGH){
+		State.state = ENCODER_CW;
+		B_HIGH = true;
+	}
+
+}
+
+void ENCODER_HANDLER2(void){
+
+	uint32_t flags = GPIO_PortGetInterruptFlags(ENCODER_GPIOB);
+	GPIO_PortClearInterruptFlags(ENCODER_GPIOB, (1u << ENCODER_PINB));
 
 	if(flags & (1u << ENCODER_PINB))
 		A_HIGH = GPIO_PinRead(ENCODER_GPIOA, ENCODER_PINA);
 
 	//this part uses variable 1U based off of example code probably should be changed to suit this application
-	if(A_HIGH){
+	if(!A_HIGH){
 		State.state = ENCODER_CCW;
-		A_HIGH = false;
-		printf("turning counter clockwise\r\n");
+		A_HIGH = true;
 	}
-	else if(B_HIGH){
-		State.state = ENCODER_CW;
-		B_HIGH = false;
-		printf("turning clockwise\r\n");
-	}
+
 }
