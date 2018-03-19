@@ -14,6 +14,8 @@
 #include "Audio/AudioStreamer.h"
 #include "fsl_debug_console.h"
 #include "fsl_adc16.h"
+#include "math.h"
+
 
 #define RECORD_BUTTON_PIN 8u
 #define RECORD_BUTTON_PORT PORTA
@@ -53,16 +55,19 @@ enum ControlState {
 	NOP,
 	RECORDING,
 	ENCODER_CW,
-	ENCODER_CCW
+	ENCODER_CCW,
+	UPDATE_INDEXES
 };
 
 enum States {
 	RECORD
 };
 
+float GetPosition(void);
+float GetLength(void);
 void InitControls(void);
 StateInstance GetControlState(void);
 void UpdateControlState(uint8_t param, uint8_t value);
-void UpdateADCValues(uint8_t channel);
+void UpdateADCValues(void);
 
 #endif /* SCANNER_CONTROLSTATE_H_ */

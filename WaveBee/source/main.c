@@ -50,13 +50,14 @@
 #define SYNC_CLOCK FTM0
 #define SYNC_CLOCK_CALLBACK FTM0_IRQHandler
 #define SYNC_CLKSRC (CLOCK_GetFreq(kCLOCK_BusClk))
-#define RAMP_SIZE 500u
+#define RAMP_SIZE 100u
 
 #define forever for(;;)
 
 bool sync = false;
 Voice* voices;
 uint32_t RecordLength = 0;
+uint32_t startIndex, endIndex;
 uint32_t playbackLength = 0;
 uint16_t summedAudio = 0;
 float Ramp[RAMP_SIZE];
@@ -69,6 +70,7 @@ int main(void) {
 	BOARD_InitBootPins();
     BOARD_InitBootClocks();
     BOARD_InitBootPeripherals();
+
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
 
@@ -102,12 +104,23 @@ int main(void) {
 			case NOP:
 				// don't do anything
 				break;
+			case UPDATE_INDEXES:
+				startIndex = (double) RecordLength * GetPosition();
+				endIndex = startIndex + ((double) (RecordLength - startIndex) * GetLength());
+
+				if(startIndex - endIndex < 200){
+					if(startIndex > RecordLength - 200)
+						startIndex -= 250;
+					if(endIndex < 200)
+						endIndex += 250;
+				}
+				break;
 				// add cases for handling the encoder states
     	}
 
     	if(!scanDelay){
     		UpdateActiveKeys();
-    		UpdateADCValues(1);
+    		UpdateADCValues();
     	}
 
     	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
@@ -123,7 +136,7 @@ int main(void) {
     				if(VoiceIndexes[i] < RAMP_SIZE)
     					summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[VoiceIndexes[i]];
 
-    				else if(VoiceIndexes[i] > RecordLength - RAMP_SIZE){
+    				else if(VoiceIndexes[i] > endIndex - RAMP_SIZE){
         				voices[i].closing += voices[i].shiftValue;
     					if(voices[i].closing == RAMP_SIZE){
     						voices[i].isClosing = false;
@@ -135,7 +148,6 @@ int main(void) {
     				}
     				else
     					summedAudio += GetAudioData(VoiceIndexes[i]);
-
     			}
 				else if(voices[i].isClosing && !voices[i].gate){
 					voices[i].closing += voices[i].shiftValue;
@@ -147,7 +159,7 @@ int main(void) {
 						summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
 				}
     			else
-    				VoiceIndexes[i] = 250;
+    				VoiceIndexes[i] = startIndex;
 
     			voices[i].shiftValue = 0;
     		}

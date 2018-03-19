@@ -14,6 +14,8 @@ StateInstance State = {
 		4
 };
 
+AnalogInputs inputs;
+
 bool record = false;
 bool  A_HIGH = false;
 bool  B_HIGH = false;
@@ -109,14 +111,49 @@ void UpdateControlState(uint8_t param, uint8_t value){
 }
 
 // expand this for reading ADC values from all sliders
-void UpdateADCValues(uint8_t channel){
+void UpdateADCValues(void){
 
-	adc16ChannelConfig.channelNumber = channel;
-
+	float temp = 0.0;
+//	adc16ChannelConfig.channelNumber = channel;
+	adc16ChannelConfig.channelNumber = POSITION_SLIDER_CHANNEL;
 	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+	temp = (int) floorf((( ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP)) /  4096.0) * 100) / 100.0;
+
+	if(temp != inputs.startPosition){
+		inputs.startPosition = temp;
+		State.state = UPDATE_INDEXES;
+	}
+
+	adc16ChannelConfig.channelNumber = LENGTH_SLIDER_CHANNEL;
+	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+	temp = (int) floorf((( ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP)) /  4096.0) * 100) / 100.0;
+
+	if(temp != inputs.length){
+		inputs.length = temp;
+		State.state = UPDATE_INDEXES;
+	}
+	// use these when the envelope is rolled in
+//	adc16ChannelConfig.channelNumber = ATTACK_SLIDER_CHANNEL;
+//	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+//
+//	adc16ChannelConfig.channelNumber = DECAY_SLIDER_CHANNEL;
+//	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+//
+//	adc16ChannelConfig.channelNumber = SUSTAIN_SLIDER_CHANNEL;
+//	ADC16_SetChannelConfig(ADC_BASE0, SLIDER_GROUP, &adc16ChannelConfig);
+//
+//	adc16ChannelConfig.channelNumber = RELEASE_SLIDER_CHANNEL;
+//	ADC16_SetChannelConfig(ADC_BASE0, SLIDER_GROUP, &adc16ChannelConfig);
 
 	// do something with this value to update parameters
-	uint32_t value = ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP);
+
+}
+float GetPosition(void){
+	return inputs.startPosition;
+}
+
+float GetLength(void){
+	return inputs.length;
 }
 
 void RECORD_HANDLER(void){

@@ -9,20 +9,21 @@
 #define DATASTRUCTURES_STRUCTURES_H_
 
 // struct for holding voice information
-struct {
-	float outputCoef;
-	int state;
-	float attackRate;
-	float decayRate;
-	float sustainLevel;
-	float releaseRate;
-	float targetRatioA;
-	float targetRatioDR;
-	float attackBase;
-	float decayBase;
-	float releaseBase;
-	uint32_t sampleLength;
-} typedef Envelope;
+//struct {
+//	float outputCoef;
+//	int state;
+//	float attackRate;
+//	float decayRate;
+//	float sustainLevel;
+//	float releaseRate;
+//	float targetRatioA;
+//	float targetRatioDR;
+//	float attackBase;
+//	float decayBase;
+//	float releaseBase;
+//	uint32_t sampleLength;
+//} typedef Envelope;
+
 
 struct {
 	bool gate;
@@ -36,11 +37,10 @@ struct {
 } typedef Voice;
 
 struct {
-	uint16_t* audioData;
-	uint32_t sampleLength;
-	uint32_t startIndex;
-	uint32_t endIndex;
-} typedef Sample;
+	float startPosition;
+	float length;
+
+} typedef AnalogInputs;
 
 struct {
 	uint8_t mode;
