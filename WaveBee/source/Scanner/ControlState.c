@@ -103,30 +103,34 @@ StateInstance GetControlState(void){
 	return State;
 }
 
-void UpdateControlState(uint8_t param, uint8_t value){
-	// function for updating the control state
-	if(param == RECORD){
-		State.state = RECORDING;
-	}
+void UpdateControlState(uint8_t value){
+	State.state = value;
 }
 
 // expand this for reading ADC values from all sliders
 void UpdateADCValues(void){
 
-	float temp = 0.0;
-//	adc16ChannelConfig.channelNumber = channel;
+	int temp = 0;
+	uint16_t conversion = 0;
+	uint16_t delay = 1000;
+
 	adc16ChannelConfig.channelNumber = POSITION_SLIDER_CHANNEL;
 	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
-	temp = (int) floorf((( ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP)) /  4096.0) * 100) / 100.0;
+	while(delay--);
+	conversion =  ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP);
+	temp = ((double) conversion / 4096.0) * 100;
 
 	if(temp != inputs.startPosition){
 		inputs.startPosition = temp;
 		State.state = UPDATE_INDEXES;
 	}
 
+	delay = 1000;
 	adc16ChannelConfig.channelNumber = LENGTH_SLIDER_CHANNEL;
 	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
-	temp = (int) floorf((( ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP)) /  4096.0) * 100) / 100.0;
+	while(delay--);
+	conversion =  ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP);
+	temp = ((double) conversion / 4096.0) * 100;
 
 	if(temp != inputs.length){
 		inputs.length = temp;
@@ -165,12 +169,10 @@ void RECORD_HANDLER(void){
 			if(!record){
 				record = true;
 				State.state = RECORDING;
-				printf("recording\r\n");
 			}
 			else{
 				record = false;
 				State.state = NOP;
-				printf("not recording\r\n");
 				EndRecording();
 			}
 		}

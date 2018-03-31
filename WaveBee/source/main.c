@@ -44,7 +44,7 @@
 #include "Scanner\VoiceAssigner.h"
 #include "Scanner\ControlState.h"
 #include "DataStructures\Structures.h"
-
+#include "Audio\PitchShift.h"
 
 #define SYNC_CLOCK_IRQ FTM0_IRQn
 #define SYNC_CLOCK FTM0
@@ -78,6 +78,8 @@ int main(void) {
     InitControls();
     BeginAudioController();
 
+    testFunctions();
+
     StateInstance state = GetControlState();
     uint32_t VoiceIndexes[state.voiceNumber];
     memset(VoiceIndexes, 0, state.voiceNumber);
@@ -101,21 +103,25 @@ int main(void) {
 				// record audio from the microphone
 				RecordLength = StartRecording();
 				break;
-			case NOP:
-				// don't do anything
-				break;
 			case UPDATE_INDEXES:
-				startIndex = (double) RecordLength * GetPosition();
-				endIndex = startIndex + ((double) (RecordLength - startIndex) * GetLength());
 
+				// both the start position and length are held on a scale of 1-100
+
+				startIndex = (float) ( RecordLength * GetPosition() ) / 100;
+				endIndex = startIndex + ((RecordLength - startIndex) * GetLength() / 100);
+//				startIndex = 500;
+//				endIndex = RecordLength;
 				if(startIndex - endIndex < 200){
 					if(startIndex > RecordLength - 200)
 						startIndex -= 250;
 					if(endIndex < 200)
 						endIndex += 250;
 				}
+				UpdateControlState(NOP);
 				break;
-				// add cases for handling the encoder states
+			case NOP:
+				// don't do anything
+				break;
     	}
 
     	if(!scanDelay){

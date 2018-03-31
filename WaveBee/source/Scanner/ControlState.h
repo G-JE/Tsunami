@@ -67,7 +67,7 @@ float GetPosition(void);
 float GetLength(void);
 void InitControls(void);
 StateInstance GetControlState(void);
-void UpdateControlState(uint8_t param, uint8_t value);
+void UpdateControlState(uint8_t value);
 void UpdateADCValues(void);
 
 #endif /* SCANNER_CONTROLSTATE_H_ */

@@ -37,8 +37,8 @@ struct {
 } typedef Voice;
 
 struct {
-	float startPosition;
-	float length;
+	int startPosition;
+	int length;
 
 } typedef AnalogInputs;
 

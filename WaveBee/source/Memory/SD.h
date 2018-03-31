@@ -11,6 +11,7 @@
 #include "fsl_sd.h"
 #include "ff.h"
 #include "diskio.h"
+#include "fsl_debug_console.h"
 
 status_t Init_SD(void);
 void WriteToSD(void);
