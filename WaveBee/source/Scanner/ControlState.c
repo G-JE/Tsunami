@@ -116,6 +116,8 @@ void UpdateADCValues(void){
 
 	adc16ChannelConfig.channelNumber = POSITION_SLIDER_CHANNEL;
 	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	// add a delay for the ADC to settle
 	while(delay--);
 	conversion =  ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP);
 	temp = ((double) conversion / 4096.0) * 100;
@@ -128,6 +130,8 @@ void UpdateADCValues(void){
 	delay = 1000;
 	adc16ChannelConfig.channelNumber = LENGTH_SLIDER_CHANNEL;
 	ADC16_SetChannelConfig(ADC_BASE1, SLIDER_GROUP, &adc16ChannelConfig);
+
+	// add a delay for the ADC to settle
 	while(delay--);
 	conversion =  ADC16_GetChannelConversionValue(ADC_BASE1, SLIDER_GROUP);
 	temp = ((double) conversion / 4096.0) * 100;

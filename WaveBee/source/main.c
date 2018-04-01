@@ -92,6 +92,7 @@ int main(void) {
 	for(uint16_t i = 0; i < RAMP_SIZE; i++)
 		Ramp[i] = (float) (1.0 + (float) i) / (float) RAMP_SIZE;
     uint16_t scanDelay = 0;
+    bool timeMode = true;
     forever {
     	// check to see if there are any changes to the control state
     	state = GetControlState();
@@ -106,13 +107,9 @@ int main(void) {
 				ShiftPitch(audio, 1);
 				break;
 			case UPDATE_INDEXES:
-
 				// both the start position and length are held on a scale of 1-100
-
 				startIndex = (float) ( RecordLength * GetPosition() ) / 100;
 				endIndex = startIndex + ((RecordLength - startIndex) * GetLength() / 100);
-//				startIndex = 500;
-//				endIndex = RecordLength;
 				if(startIndex - endIndex < 200){
 					if(startIndex > RecordLength - 200)
 						startIndex -= 250;
@@ -121,14 +118,22 @@ int main(void) {
 				}
 				UpdateControlState(NOP);
 				break;
+			case PITCH_SHIFT_MODE:
+				// change the output to be controlled through time independent pitch shift mode
+				timeMode = false;
+			case TIME_SHIFT_MODE:
+				// change the output to be controlled by changing time domain of sample
+				timeMode = true;
 			case NOP:
 				// don't do anything
+				break;
+			default:
 				break;
     	}
 
     	if(!scanDelay){
     		UpdateActiveKeys();
-    		UpdateADCValues();
+//    		UpdateADCValues();
     	}
 
     	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
@@ -138,38 +143,43 @@ int main(void) {
     		// update the dac
     		voices = RefreshVoices();
     		summedAudio = 0;
-    		for(uint8_t i = 0; i < state.voiceNumber; i++){
-    			if(voices[i].gate){
-    				VoiceIndexes[i] += voices[i].shiftValue;
-    				if(VoiceIndexes[i] < RAMP_SIZE)
-    					summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[VoiceIndexes[i]];
+    		if(timeMode){
+				for(uint8_t i = 0; i < state.voiceNumber; i++){
+					if(voices[i].gate){
+						VoiceIndexes[i] += voices[i].shiftValue;
+						if(VoiceIndexes[i] < (RAMP_SIZE + startIndex))
+							summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[VoiceIndexes[i]];
 
-    				else if(VoiceIndexes[i] > endIndex - RAMP_SIZE){
-        				voices[i].closing += voices[i].shiftValue;
-    					if(voices[i].closing == RAMP_SIZE){
-    						voices[i].isClosing = false;
-    						voices[i].gate = false;
-    						voices[i].position = 0;
-    					}
-    					else if(voices[i].closing < RAMP_SIZE)
-    						summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
-    				}
-    				else
-    					summedAudio += GetAudioData(VoiceIndexes[i]);
-    			}
-				else if(voices[i].isClosing && !voices[i].gate){
-					voices[i].closing += voices[i].shiftValue;
-					if(voices[i].closing == RAMP_SIZE){
-						voices[i].isClosing = false;
-						voices[i].position = 0;
+						else if(VoiceIndexes[i] > endIndex - RAMP_SIZE){
+							voices[i].closing += voices[i].shiftValue;
+							if(voices[i].closing == RAMP_SIZE){
+								voices[i].isClosing = false;
+								voices[i].gate = false;
+								voices[i].position = 0;
+							}
+							else if(voices[i].closing < RAMP_SIZE)
+								summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
+						}
+						else
+							summedAudio += GetAudioData(VoiceIndexes[i]);
 					}
-					else if(voices[i].closing < RAMP_SIZE)
-						summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
-				}
-    			else
-    				VoiceIndexes[i] = startIndex;
+					else if(voices[i].isClosing && !voices[i].gate){
+						voices[i].closing += voices[i].shiftValue;
+						if(voices[i].closing == RAMP_SIZE){
+							voices[i].isClosing = false;
+							voices[i].position = 0;
+						}
+						else if(voices[i].closing < RAMP_SIZE)
+							summedAudio += GetAudioData(VoiceIndexes[i]) * Ramp[RAMP_SIZE - voices[i].closing];
+					}
+					else
+						VoiceIndexes[i] = startIndex;
 
-    			voices[i].shiftValue = 0;
+					voices[i].shiftValue = 0;
+				}
+    		}
+    		else{
+    			// apply the time independent pitch shift mode there (monophonic)
     		}
 			UpdateDac(summedAudio >> 4);
 

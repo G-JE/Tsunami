@@ -23,7 +23,7 @@ extern const float Kaiser[256];
 void InitPitchShifting(void);
 uint16_t* ShiftPitch(uint16_t* audio, double ratio);
 void princarg(const float Phasein[128], float Phase[128]);
-double rt_roundd_snf(float u);
+float rt_roundd_snf(float u);
 void b_cos(float x[WLEN/2]);
 int Round(float number);
 void fftshift(float* array);

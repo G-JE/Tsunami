@@ -46,14 +46,13 @@ uint16_t* ShiftPitch(uint16_t* audio, double ratio){
 		phi[j++] = atan2f(grain[i], grain[i+1]);
 
 	for(uint16_t i = 0; i < WLEN/2; i++)
-		delta_phi[i] = (phi[i] - phi0[i]) - (1.5707963267948966 * i);
+		delta_phi[i] = (1.5707963267948966 * i) + (phi[i] - phi0[i]) - (1.5707963267948966 * i);
 
-	princarg(delta_phi, phi0);
+	princarg(delta_phi, delta_phi);
 
 	for(uint16_t i = 0; i < WLEN/2; i++){
-		tmp = ratio * (1.5707963267948966 * i + phi0[i]) / 64.0;
-		phi0[i] = (r[i] - r0[i]) / 64.0;
-		delta_phi[i] = tmp;
+		delta_r[i] = (r[i] - r0[i]) / 64.0;
+		delta_psi[i] = (ratio * delta_phi[i]) / 64.0;
 	}
 
 	for (uint8_t k = 0; k < 64; k++) {
@@ -98,9 +97,9 @@ void b_cos(float x[WLEN/2])
   }
 }
 
-double rt_roundd_snf(float u)
+float rt_roundd_snf(float u)
 {
-  double y;
+  float y;
   if (fabs(u) < 4.503599627370496E+15) {
     if (u >= 0.5) {
       y = floor(u + 0.5);
