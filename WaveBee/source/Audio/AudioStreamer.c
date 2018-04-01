@@ -38,7 +38,6 @@ uint16_t GetMaximum(void){
 	return Maximum;
 }
 
-
 void Init_Dialog7212(void){
     sai_config_t config;
     uint32_t mclkSourceClockHz = 0U;

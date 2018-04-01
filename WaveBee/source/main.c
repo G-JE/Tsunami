@@ -78,6 +78,7 @@ int main(void) {
     InitFTM();
     InitControls();
     BeginAudioController();
+    InitPitchShifting();
 
     StateInstance state = GetControlState();
     uint32_t VoiceIndexes[state.voiceNumber];

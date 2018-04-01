@@ -11,9 +11,14 @@ float32_t grain[WLEN*2];
 float result[64];
 float phi0[WLEN/2];
 float r0[WLEN/2];
-float psi0[WLEN/2];
+float psi[WLEN/2];
 float b[WLEN/2];
 
+void InitPitchShifting(void){
+	memset(&phi0[0], 0, sizeof(double) << 7);
+	memset(&r0[0], 0, sizeof(double) << 7);
+	memset(&psi[0], 0, sizeof(double) << 7);
+}
 
 uint16_t* ShiftPitch(uint16_t* audio, double ratio){
 
@@ -36,16 +41,16 @@ uint16_t* ShiftPitch(uint16_t* audio, double ratio){
 	arm_cfft_f32(&arm_cfft_sR_f32_len256, (float*) grain, 0, 0);
 	arm_cmplx_mag_f32(grain, r, 128);
 
-	uint8_t j = 0;
-	for(uint8_t i = 0; i < WLEN; i+=2)
+	uint16_t j = 0;
+	for(uint16_t i = 0; i < WLEN; i+=2)
 		phi[j++] = atan2f(grain[i], grain[i+1]);
 
-	for(uint8_t i = 0; i < WLEN/2; i++)
+	for(uint16_t i = 0; i < WLEN/2; i++)
 		delta_phi[i] = (phi[i] - phi0[i]) - (1.5707963267948966 * i);
 
 	princarg(delta_phi, phi0);
 
-	for(uint8_t i = 0; i < WLEN/2; i++){
+	for(uint16_t i = 0; i < WLEN/2; i++){
 		tmp = ratio * (1.5707963267948966 * i + phi0[i]) / 64.0;
 		phi0[i] = (r[i] - r0[i]) / 64.0;
 		delta_phi[i] = tmp;
@@ -70,8 +75,7 @@ uint16_t* ShiftPitch(uint16_t* audio, double ratio){
 
     memcpy(&phi0[0], &phi[0], sizeof(double) << 7);
     memcpy(&r0[0], &r[0], sizeof(double) << 7);
-    memcpy(&delta_phi[0], &psi[0], sizeof(double) << 7);
-    princarg(delta_phi, psi);
+    princarg(psi, psi);
 
 	return (uint16_t*) result;
 
