@@ -10,14 +10,22 @@
 
 #include "stdint.h"
 #include "arm_math.h"
+#include "arm_const_structs.h"
+#include "math.h"
 #include "fsl_debug_console.h"
+#include "Audio/KaiserWindow.h"
+#include "Audio/AudioStreamer.h"
 
-#define WLEN 256
+#define WLEN (256U)
+
+extern const float Kaiser[256];
 
 void testFunctions(void);
 uint16_t* ShiftPitch(uint16_t* audio, double ratio);
-double PrincArg(double phaseIn);
+void princarg(const float Phasein[128], float Phase[128]);
+double rt_roundd_snf(float u);
+void b_cos(float x[WLEN/2]);
 int Round(float number);
-void fftshift(uint16_t* array);
+void fftshift(float* array);
 
 #endif /* AUDIO_PITCHSHIFT_H_ */

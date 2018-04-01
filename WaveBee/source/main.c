@@ -33,6 +33,7 @@
  * @brief   Application entry point.
  */
 #include <stdio.h>
+#include "arm_math.h"
 #include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
@@ -78,8 +79,6 @@ int main(void) {
     InitControls();
     BeginAudioController();
 
-    testFunctions();
-
     StateInstance state = GetControlState();
     uint32_t VoiceIndexes[state.voiceNumber];
     memset(VoiceIndexes, 0, state.voiceNumber);
@@ -102,6 +101,8 @@ int main(void) {
 			case RECORDING:
 				// record audio from the microphone
 				RecordLength = StartRecording();
+				uint16_t* audio = GetAudio();
+				ShiftPitch(audio, 1);
 				break;
 			case UPDATE_INDEXES:
 

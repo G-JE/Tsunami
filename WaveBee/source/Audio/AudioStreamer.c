@@ -20,11 +20,24 @@ volatile uint32_t receiveCount = 0;
 i2c_master_handle_t i2cHandle = {{0, 0, kI2C_Write, 0, 0, NULL, 0}, 0, 0, NULL, NULL};
 uint16_t audioBuff[80000];
 uint32_t BufferLength = 0;
+uint16_t Maximum = 0;
 bool recording = false;
 
 uint16_t GetAudioData(uint32_t index){
 	return audioBuff[index];
 }
+
+void FindMaximum(void){
+	for(uint32_t i = 0; i < BufferLength; i++){
+		if(Maximum < audioBuff[i])
+			Maximum = audioBuff[i];
+	}
+}
+
+uint16_t GetMaximum(void){
+	return Maximum;
+}
+
 
 void Init_Dialog7212(void){
     sai_config_t config;
@@ -130,7 +143,13 @@ void rxCallback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void
 
         // cut off tail end of sample on account of the closing of button
         BufferLength -= 1200;
+
+        FindMaximum();
     }
+}
+
+uint16_t* GetAudio(void){
+	return audioBuff;
 }
 
 void EndRecording(void){

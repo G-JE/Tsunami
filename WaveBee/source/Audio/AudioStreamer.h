@@ -10,6 +10,7 @@
 #include "fsl_dmamux.h"
 #include "fsl_gpio.h"
 #include "fsl_port.h"
+//#include "Audio/PitchShift.h"
 
 #ifndef AUDIOSTREAM_AUDIOSTREAMER_H_
 #define AUDIOSTREAM_AUDIOSTREAMER_H_
@@ -52,5 +53,8 @@ uint32_t StartRecording(void);
 void EndRecording(void);
 void Init_Buttons(void);
 uint16_t GetAudioData(uint32_t index);
+void FindMaximum(void);
+uint16_t GetMaximum(void);
+uint16_t* GetAudio(void);
 
 #endif /* AUDIOSTREAM_AUDIOSTREAMER_H_ */
