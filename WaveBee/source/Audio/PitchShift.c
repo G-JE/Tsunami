@@ -33,9 +33,9 @@ uint16_t* ShiftPitch(uint16_t* audio, double ratio){
 	float b[WLEN/2];
 	float tmp;
 
-	for(uint16_t i = 0; i < WLEN; i++){
+	for(uint16_t i = 0; i < WLEN; i++)
 		grain[i] = Kaiser[i] * ((float) audio[i] / (float) max);
-	}
+
 
 	fftshift(grain);
 	arm_cfft_f32(&arm_cfft_sR_f32_len256, (float*) grain, 0, 0);

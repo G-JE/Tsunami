@@ -184,7 +184,7 @@ uint32_t StartRecording(){
         BufferLength += BUFFER_SIZE;
     }
 
-	/* Wait for record and playback finished */
+	/* Wait for record finished */
 	while (isrxFinished != true){}
 
 	return BufferLength;

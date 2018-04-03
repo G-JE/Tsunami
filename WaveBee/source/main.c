@@ -133,7 +133,7 @@ int main(void) {
 
     	if(!scanDelay){
     		UpdateActiveKeys();
-//    		UpdateADCValues();
+    		UpdateADCValues();
     	}
 
     	// all of the logic for the keyboard input and output is synchronized to the update rate of DAC
